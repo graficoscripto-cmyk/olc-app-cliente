@@ -39,7 +39,7 @@ const heroArt = `<div class="hero__elements-wrap" aria-hidden="true">
  <svg class="he he-smile" viewBox="0 0 130 140"><path d="M20 20L116 6v110" fill="#fff" stroke="#131313" stroke-width="2"/><rect x="2" y="20" width="114" height="116" fill="#fff" stroke="#131313" stroke-width="2"/><path d="M32 62V48h14M72 48h14v14M86 94v14H72M46 108H32V94M47 66v9M71 66v9M45 88q14 12 28 0" fill="none" stroke="#131313" stroke-width="3" stroke-linecap="round"/></svg>
  <svg class="he he-cone" viewBox="0 0 90 120"><path d="M6 4l18 98M6 4l76 66" stroke="#131313" stroke-width="2" fill="none"/><ellipse cx="54" cy="88" rx="38" ry="17" transform="rotate(-30 54 88)" fill="url(#cyG)" stroke="#131313" stroke-width="2"/></svg>
  <svg class="he he-wedge" viewBox="0 0 134 134"><path d="M4 4h104l22 26H28v100L4 104z" fill="#fff" stroke="#131313" stroke-width="2"/><path d="M28 30h102L28 130z" fill="url(#cyG)" stroke="#131313" stroke-width="2"/><path d="M42 46h.1M64 46h.1M86 46h.1M42 68h.1M64 68h.1M42 90h.1" stroke="#131313" stroke-width="7" stroke-linecap="round"/></svg>
- <div class="he he-card"><span class="he-dots">✳✳✳</span><div class="he-card__head"><i></i><b>Seu Agente</b><small>exemplo de conversa</small></div>
+ <div class="he he-card"><span class="he-dots">✳✳✳</span><div class="he-card__head"><i></i><div><b>Seu Agente</b><small>exemplo de conversa</small></div><span class="he-live">● AO VIVO</span></div>
   <div class="he-card__log">${bubbles([['in', 'Oi! Tem horário no sábado?'], ['out', 'Tenho sim. Qual horário fica melhor?'], ['in', 'Às 10h'], ['out', 'Fechado! Já marquei na agenda.']])}</div>
   <div class="he-card__tele">${ico('cal')}<span>Reserva registrada na Agenda</span></div></div>
 </div>`;
@@ -94,21 +94,22 @@ function render(root, on) {
  <main>
  <section class="section--hero" id="Protection"><div class="lp-wrap hero__columns">
   <div class="hero__text">
-   <div class="hero__over-row"><p class="hero__over-heading">Agente de prospecção, atendimento &amp; agendamento para empresas</p><svg viewBox="0 0 60 90" aria-hidden="true"><path d="M58 90V8q0-4-4-4H8" fill="none" stroke="#131313" stroke-width="2"/><path d="M0 4l12-5v10z" fill="#131313"/></svg></div>
-   <h1>Seu WhatsApp atende e agenda ${star('hero__heading-star')}</h1>
-   <div class="hero__price-wrap"><div class="hero__price"><b>5<sup>passos</sup></b><span>para ensinar o seu Agente</span></div>${cube('Testar Meu Agente', 'data-login')}</div>
+   <div class="hero__over-row"><p class="hero__over-heading"><span>● NOVO</span>Agente de prospecção, atendimento &amp; agendamento para empresas</p><svg viewBox="0 0 60 90" aria-hidden="true"><path d="M58 90V8q0-4-4-4H8" fill="none" stroke="#131313" stroke-width="2"/><path d="M0 4l12-5v10z" fill="#131313"/></svg></div>
+   <h1>Seu WhatsApp <mark class="hl">atende e agenda</mark> ${star('hero__heading-star')}</h1>
+   <div class="hero__price-wrap"><div class="hero__price"><b><em>5</em><sup>passos</sup></b><span>para ensinar o seu Agente</span></div>${cube('Testar Meu Agente', 'data-login')}</div>
   </div>
   ${heroArt}
  </div></section>
 
  <section class="section--solutions" id="Solutions" aria-labelledby="solTitle"><div class="solutions__columns">
   ${grid()}
-  <div class="solutions__center"><div><h2 id="solTitle">Do primeiro oi à agenda</h2><a class="btn2" href="${WA}" target="_blank" rel="noopener">Falar com um especialista ${arrow()}<i class="line mod--1"></i><i class="line mod--2"></i></a></div>
+  <div class="solutions__center"><div><span class="sec-pill">● ATENDIMENTO 24H</span><h2 id="solTitle">Do primeiro oi <mark class="hl">à agenda</mark></h2><a class="btn2" href="${WA}" target="_blank" rel="noopener">Falar com um especialista ${arrow()}<i class="line mod--1"></i><i class="line mod--2"></i></a></div>
    <p>Você ensina o que a empresa oferece. O Agente responde no WhatsApp com essas informações, tira dúvidas, conduz a reserva e registra na Agenda. Quando quiser, você pausa o Agente naquele contato e assume a conversa.</p></div>
  </div></section>
 
  <section class="section--arguments" id="Arguments" aria-labelledby="argTitle"><div class="lp-wrap">
-  <h2 id="argTitle">O que o seu Agente faz</h2>
+  <span class="sec-pill">● DIFERENCIAIS</span>
+  <h2 id="argTitle">O que o seu <mark class="hl">Agente faz</mark></h2>
   <div class="argument__grid">
    ${ARGS.map(a => `<article class="argument__card ${a[0]}"><span class="argument__num">${a[1]}</span>${ico(a[4])}<h3>${a[2]}</h3><p>${a[3]}</p>${a[5] ? `<small>${a[5]}</small>` : ''}</article>`).join('')}
    <div class="argument__cube a6" data-animate="cube-hover"><button type="button" class="argument__cube-front" data-login>${arrow()}<span class="argument__cube-title">Testar o meu Agente</span></button><i class="argument__cube-side mod--1"></i><i class="argument__cube-side mod--2"></i><i class="argument__cube-side mod--3"></i></div>
