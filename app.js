@@ -9,9 +9,8 @@ const QUICK = [
 ];
 const TABS = [
   ['bot', 'Meu Atendente IA', 'Atendente', 'M12 3v3M7 6h10a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3zM9 12h.01M15 12h.01M9.5 16h5M2 11v3M22 11v3'],
-  ['chat', 'Testar meu robô ao vivo', 'Testar', 'M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.8L3 21l1.9-5A8.4 8.4 0 1 1 21 11.5z'],
-  ['agenda', 'Agenda e conversas', 'Agenda', 'M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM8.5 14.5l2.3 2.3 4.7-4.6'],
-  ['site', 'Meu site', 'Meu site', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.5-3.8-9S9.500 5.500 12 3z']
+  ['chat', 'Testar ao Vivo', 'Testar ao Vivo', 'M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.8L3 21l1.9-5A8.4 8.4 0 1 1 21 11.5z'],
+  ['agenda', 'Agenda & Conversas', 'Agenda', 'M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM8.5 14.5l2.3 2.3 4.7-4.6']
 ];
 const I = {
   x: 'M6 6l12 12M18 6L6 18', trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
@@ -25,7 +24,6 @@ const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const icon = d => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
 const digits = v => String(v ?? '').replace(/\D/g, '');
 const list = v => Array.isArray(v) ? v : [];
-const safeUrl = u => { try { const x = new URL(u); return x.protocol === 'https:' ? x.href : ''; } catch (e) { return ''; } };
 const when = v => { const d = new Date(v); return isNaN(d) ? '' : d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); };
 const waLink = v => { let n = digits(v); if (n.length === 10 || n.length === 11) n = '55' + n; return n.length >= 12 ? 'https://wa.me/' + n : ''; };
 const store = {
@@ -87,18 +85,110 @@ function confirmBox(title, text, yes) {
     $('[data-yes]', modal).onclick = () => { ok = true; modal.close(); };
   });
 }
-function applyClient(c) { if (c && c.slug === S.slug) S.client = c; }
+function applyClient(c) { if (c && c.slug === S.slug) { S.client = c; updateHero(); } }
+
+/* ---------- movimento ---------- */
+const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+function stagger(els, dx = 0, dy = 16) {
+  if (calm()) return;
+  els.forEach((el, i) => el.animate([{ opacity: 0, transform: `translate(${dx}px, ${dy}px)` }, { opacity: 1, transform: 'none' }], { duration: 520, delay: Math.min(i, 8) * 65, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'backwards' }));
+}
+function radar(cls) {
+  return `<div class="radar ${cls || ''}" aria-hidden="true"><i class="wave"></i><i class="wave"></i><i class="wave"></i><i class="sweep"></i>
+  <svg viewBox="0 0 200 200">
+   <g class="rings"><circle cx="100" cy="100" r="94"/><circle cx="100" cy="100" r="72"/><circle cx="100" cy="100" r="49"/><path d="M100 6v188M6 100h188"/></g>
+   <g class="orbit o1"><path d="M100 28L153 66M100 28L47 70"/><circle cx="100" cy="28" r="4.5"/><circle cx="153" cy="66" r="3"/><circle cx="47" cy="70" r="3"/></g>
+   <g class="orbit o2"><path d="M100 172l-44-24M100 172l50-31"/><circle class="gold" cx="100" cy="172" r="4.5"/><circle class="gold" cx="56" cy="148" r="3"/><circle class="gold" cx="150" cy="141" r="3"/></g>
+   <g class="core"><circle class="halo" cx="100" cy="100" r="33"/><path class="hex" d="M100 72l24 14v28l-24 14-24-14V86z"/><path class="face" d="M89 96h.1M111 96h.1M90 109q10 8 20 0"/></g>
+  </svg></div>`;
+}
+const NODE = {
+  wa: 'M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.8L3 21l1.9-5A8.4 8.4 0 1 1 21 11.5z',
+  ia: 'M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3M7 6h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1zM10 10h4v4h-4z'
+};
+function heroState() {
+  const on = !!S.client.botAtivo, open = !!(S.wa && S.wa.state === 'open');
+  if (!on) return { key: 'paused', seal: 'Atendente pausado', title: 'Em pausa.', text: 'Não responde ninguém até você ligar.' };
+  if (open) return { key: 'live', seal: 'Atendendo ao vivo', title: 'No ar agora.', text: 'Ligado e conectado ao seu WhatsApp.' };
+  return { key: 'ready', seal: 'Falta conectar o WhatsApp', title: 'Quase lá.', text: 'Robô ligado. Conecte o WhatsApp para atender.' };
+}
+const KPIS = [
+  ['notas', 'Regras Ativas', () => list(S.client.notasContexto).length],
+  ['srv', 'Serviços no Catálogo', () => list(S.client.servicosCatalogo).length],
+  ['ags', 'Reservas na Agenda', () => list(S.client.agendamentos).filter(a => a.status !== 'cancelado').length]
+];
+function buildHero() {
+  const el = $('#hero');
+  el.innerHTML = `<div class="h-grid"></div>
+  <div class="h-top">${radar()}<div class="h-copy"><span class="seal-live"><i></i><b id="hSeal"></b></span><h2 id="hTitle"></h2><p id="hText"></p></div></div>
+  <div class="flow" role="img" id="hFlow">
+   <div class="node n-wa">${icon(NODE.wa)}<span>WhatsApp</span></div>
+   <div class="link l1"><u><i></i></u><u class="back"><i></i></u></div>
+   <div class="node n-ia">${icon(NODE.ia)}<span>Motor IA</span></div>
+   <div class="link l2"><u><i></i></u><u class="back"><i></i></u></div>
+   <div class="node n-ag">${icon(TABS[2][3])}<span>Agenda</span></div>
+  </div>
+  <div class="h-acts"><div class="power"><button type="button" class="switch" role="switch" id="bBot" aria-label="Ligar ou pausar o atendente"></button><span id="hPower"></span></div><button type="button" class="btn" id="bConn"></button></div>
+  <div class="kpis">${KPIS.map(k => `<button type="button" class="kpi" data-kpi="${k[0]}"><b data-n></b><span>${k[1]}</span><em aria-hidden="true">${'<i></i>'.repeat(8)}</em></button>`).join('')}</div>`;
+  $('#bBot').onclick = async e => {
+    const b = e.currentTarget, next = !S.client.botAtivo;
+    if (b.disabled) return; b.disabled = true; b.setAttribute('aria-checked', next);
+    try { const d = await call('save_bot_settings', { botAtivo: next }); applyClient(d.client); toast(next ? 'Atendente ligado.' : 'Atendente pausado.'); burst(); }
+    catch (x) { toast(x.message, true); }
+    b.disabled = false; updateHero();
+  };
+  $('#bConn').onclick = connectModal;
+  el.onclick = e => {
+    const k = e.target.closest('[data-kpi]'); if (!k) return;
+    const to = k.dataset.kpi, tab = to === 'ags' ? 'agenda' : 'bot';
+    if (S.tab !== tab) show(tab);
+    const target = $(to === 'notas' ? '#cNotas' : to === 'srv' ? '#cSrv' : '#cAgenda');
+    if (target) target.scrollIntoView({ block: 'start', behavior: calm() ? 'auto' : 'smooth' });
+  };
+  updateHero();
+}
+function updateHero() {
+  const el = $('#hero'); if (!el || !S.client || !$('#hSeal')) return;
+  const st = heroState(), on = !!S.client.botAtivo, open = !!(S.wa && S.wa.state === 'open');
+  el.dataset.state = st.key;
+  $('#hSeal').textContent = st.seal; $('#hTitle').textContent = st.title; $('#hText').textContent = st.text;
+  $('#bBot').setAttribute('aria-checked', on); $('#hPower').textContent = on ? 'Atendente ligado' : 'Atendente pausado';
+  const c = $('#bConn'); c.textContent = open ? 'WhatsApp conectado ✓' : 'Conectar meu WhatsApp (QR Code / Código)'; c.className = 'btn ' + (open ? '' : 'gold');
+  $('#hFlow').setAttribute('aria-label', open ? 'Fluxo ativo entre WhatsApp, motor de inteligência artificial e agenda' : 'WhatsApp ainda não conectado ao motor de inteligência artificial');
+  KPIS.forEach(([key, label, get]) => {
+    const card = $(`[data-kpi="${key}"]`, el), n = get(), prev = card.dataset.v;
+    card.dataset.v = n; $('[data-n]', card).textContent = n; card.setAttribute('aria-label', `${label}: ${n}`);
+    $$('em i', card).forEach((s, i) => s.classList.toggle('lit', i < n));
+    if (prev !== undefined && Number(prev) !== n) pulse(card);
+  });
+}
+function pulse(el) {
+  if (!el || calm()) return;
+  el.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08)', offset: .35 }, { transform: 'scale(1)' }], { duration: 650, easing: 'cubic-bezier(.22,1,.36,1)' });
+  glow(el);
+}
+function glow(el) {
+  if (!el || calm()) return;
+  const g = document.createElement('i'); g.className = 'glow'; el.appendChild(g);
+  g.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'scale(1)', offset: .25 }, { opacity: 0, transform: 'scale(1.02)' }], { duration: 1500, easing: 'ease-out' }).onfinish = () => g.remove();
+}
+function burst() {
+  const r = $('#hero .radar'); if (!r || calm()) return;
+  const g = document.createElement('i'); g.className = 'burst'; r.appendChild(g);
+  g.animate([{ opacity: .9, transform: 'scale(.3)' }, { opacity: 0, transform: 'scale(1.35)' }], { duration: 900, easing: 'cubic-bezier(.22,1,.36,1)' }).onfinish = () => g.remove();
+}
 
 /* ---------- entrada ---------- */
 function gate(prefill = '', error = '') {
   S.client = null; S.wa = null; document.title = 'OLC · Seu atendimento';
-  const quick = S.linkMode ? '' : `<div><h3>Acesso rápido</h3><div class="quick" data-quick></div></div>`;
+  const quick = S.linkMode ? '' : '<div class="picker"><h2>Escolha a empresa</h2><div class="quick" data-quick></div></div>';
   $('#app').innerHTML = `<main class="gate">
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
   <div class="gate-top"><div class="logo"><img src="icon.svg" alt="" width="38" height="38"><span>OLC Digital</span></div><button type="button" class="master-btn" data-master>👑 Modo Mestre OLC (Gustavo)</button></div>
   <div class="gate-body">
-   <div class="gate-copy"><h1>Seu atendimento, sua agenda e seu site num só lugar.</h1><p>Ensine o seu atendente, teste as respostas e acompanhe o que foi marcado.</p>
-    <ul><li>${icon(TABS[0][3])}Atendente no seu WhatsApp</li><li>${icon(TABS[2][3])}Agendamentos organizados</li><li>${icon(TABS[3][3])}Pedidos de mudança no seu site</li></ul></div>
+   <div class="gate-copy">${radar('gate-radar')}<h1>Seu atendente no WhatsApp, <em>sempre por perto.</em></h1><p>Ensine, teste ao vivo e acompanhe o que foi marcado.</p></div>
    <div class="stack">
+    ${quick}
     <form class="card stack" id="login" novalidate>
      <h2>Entrar no meu painel</h2>
      <label>Código da empresa<input name="slug" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="nome-da-empresa" value="${esc(prefill)}" required></label>
@@ -107,9 +197,9 @@ function gate(prefill = '', error = '') {
      <p class="err" role="alert">${esc(error)}</p>
      <button class="btn primary block" type="submit">Entrar</button>
     </form>
-    ${quick}
    </div>
   </div></main>`;
+  stagger($$('.gate-copy>*,.picker,#login'), 0, 18);
   const box = $('[data-quick]');
   if (box) box.innerHTML = QUICK.map(q => `<button type="button" data-q="${q.slug}" aria-pressed="${q.slug === prefill}"><span class="ava" aria-hidden="true">${q.sigla}</span><span class="tx"><b>${esc(q.nome)}</b><small>${esc(q.nicho)} · ${savedPin(q.slug) ? 'abre com 1 toque' : 'pede o código na 1ª vez'}</small></span></button>`).join('');
   const f = $('#login');
@@ -124,7 +214,7 @@ function gate(prefill = '', error = '') {
     const slug = b.dataset.q, pin = savedPin(slug);
     f.slug.value = slug; $$('[data-q]', box).forEach(x => x.setAttribute('aria-pressed', x === b));
     if (pin) busy(b, async () => { try { await enter(slug, pin, null); } catch (x) { if (x.code === 401) { store.del('localStorage', sessKey(slug)); store.del('sessionStorage', sessKey(slug)); } $('.err', f).textContent = x.message; } });
-    else { $('.err', f).textContent = ''; f.pin.focus(); toast('Digite o código de acesso. Depois é só 1 toque neste aparelho.'); }
+    else { $('.err', f).textContent = ''; f.pin.focus({ preventScroll: true }); f.scrollIntoView({ block: 'center', behavior: calm() ? 'auto' : 'smooth' }); toast('Digite o código de acesso. Depois é só 1 toque neste aparelho.'); }
   };
   $('[data-master]').onclick = master;
 }
@@ -193,7 +283,7 @@ async function copyAccess(slug) {
 function randomCode() { const abc = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789', a = new Uint32Array(12); crypto.getRandomValues(a); return [...a].map(n => abc[n % abc.length]).join(''); }
 function newClient() {
   modal.onclick = null;
-  openModal('Novo cliente', `<form class="stack" id="nc"><label>Nome da empresa<input name="nomeEmpresa" required maxlength="80"></label><label>Nicho<input name="nicho" required placeholder="Ex.: clínica de estética" maxlength="80"></label><div class="row"><label>Cidade<input name="cidade" maxlength="60"></label><label>WhatsApp do dono<input name="telefoneDono" inputmode="tel" placeholder="55 DDD número"></label></div><div class="row"><label>Código de acesso<input name="pinAcesso" minlength="10" required autocomplete="off" autocapitalize="none" spellcheck="false" value="${randomCode()}"></label><label>Site (https)<input name="siteUrl" type="url" placeholder="https://"></label></div><label>Contexto base da OLC<textarea name="contextoAdminOLC" rows="4" placeholder="O que o atendente precisa saber sobre a empresa"></textarea></label><p class="err" role="alert"></p><button class="btn gold block">Criar cliente</button></form>`);
+  openModal('Novo cliente', `<form class="stack" id="nc"><label>Nome da empresa<input name="nomeEmpresa" required maxlength="80"></label><label>Nicho<input name="nicho" required placeholder="Ex.: clínica de estética" maxlength="80"></label><div class="row"><label>Cidade<input name="cidade" maxlength="60"></label><label>WhatsApp do dono<input name="telefoneDono" inputmode="tel" placeholder="55 DDD número"></label></div><div class="row"><label>Código de acesso<input name="pinAcesso" minlength="10" required autocomplete="off" autocapitalize="none" spellcheck="false" value="${randomCode()}"></label></div><label>Contexto base da OLC<textarea name="contextoAdminOLC" rows="4" placeholder="O que o atendente precisa saber sobre a empresa"></textarea></label><p class="err" role="alert"></p><button class="btn gold block">Criar cliente</button></form>`);
   const f = $('#nc', modal);
   f.onsubmit = e => {
     e.preventDefault();
@@ -225,21 +315,27 @@ function shell() {
     <button type="button" class="iconbtn mobile-only" data-master aria-label="Modo Mestre OLC">👑</button>
     <button type="button" class="iconbtn" data-reload aria-label="Atualizar dados">${icon(I.refresh)}</button>
     <button type="button" class="iconbtn mobile-only" data-logout aria-label="Sair">${icon(I.out)}</button></header>
+   <div class="hero-wrap"><section class="hero" id="hero" aria-label="Estado do atendente"></section></div>
    <main class="view" id="view" role="tabpanel" tabindex="-1"></main>
   </div></div>`;
   $$('[data-tab]').forEach(b => b.onclick = () => show(b.dataset.tab));
   $$('[data-master]').forEach(b => b.onclick = master);
   $$('[data-logout]').forEach(b => b.onclick = async () => { if (await confirmBox('Sair do painel?', 'O código de acesso deixa de ficar lembrado neste aparelho.', 'Sair')) logout(); });
+  buildHero();
   $('[data-reload]').onclick = e => busy(e.currentTarget, async () => { await reload(); show(S.tab); toast('Dados atualizados.'); });
   show(S.tab);
 }
-async function reload() { const slug = S.slug, d = await call('get_client'); if (slug !== S.slug) return; S.client = d.client; S.wa = d.whatsappStatus || null; }
+async function reload() { const slug = S.slug, d = await call('get_client'); if (slug !== S.slug) return; S.client = d.client; S.wa = d.whatsappStatus || null; updateHero(); }
 function show(tab) {
+  const order = TABS.map(t => t[0]), dir = order.indexOf(tab) - order.indexOf(S.tab);
   S.tab = tab;
+  const hero = $('#hero'); hero.className = 'hero m-' + tab; hero.parentElement.className = 'hero-wrap w-' + tab;
   $$('[data-tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === tab));
   const v = $('#view'); v.className = 'view' + (tab === 'chat' ? ' is-chat' : ''); v.setAttribute('aria-labelledby', 'tab-' + tab);
-  ({ bot: viewBot, chat: viewChat, agenda: viewAgenda, site: viewSite })[tab](v);
+  ({ bot: viewBot, chat: viewChat, agenda: viewAgenda })[tab](v);
   window.scrollTo(0, 0);
+  const dx = Math.sign(dir) * 26;
+  stagger(tab === 'chat' ? [$('.chat', v)] : $$('.view-head,.cols .card', v), dx, dx ? 0 : 18);
 }
 const head = (t, p) => `<div class="view-head"><h1>${t}</h1><p>${p}</p></div>`;
 
@@ -254,16 +350,15 @@ function viewBot(v) {
   const c = S.client;
   v.innerHTML = head('Meu Atendente IA', 'Ligue, conecte e ensine. O que você salvar aqui vale nas próximas respostas.') + `<div class="cols">
   <div class="stack">
-   <section class="card hi" id="cStatus"></section>
-   <section class="card"><h2>Ensinar o robô agora</h2>
+   <section class="card hi"><h2>Ensinar o Robô Agora</h2>
     <form class="stack" id="fNota"><label>Aviso do dia, regra, preço ou resposta<textarea name="texto" rows="3" maxlength="1500" placeholder="Ex.: neste sábado não temos horário pela manhã."></textarea></label><button class="btn primary block">Adicionar ao Bot</button></form>
     <p class="tip">💡 Você também pode ensinar pelo WhatsApp. Envie <code>#treinar sua regra</code> ou <code>#aviso seu aviso</code>. Mande sempre na conversa <b>com o seu próprio número</b>: se enviar na conversa de um cliente, ele recebe a confirmação.</p></section>
-   <section class="card"><header><h2>Regras e contextos ativos</h2><span class="badge" id="nCount"></span></header><ul class="list" id="notas"></ul></section>
+   <section class="card" id="cNotas"><header><h2>Regras e Contextos Ativos</h2><span class="badge" id="nCount"></span></header><ul class="list" id="notas"></ul></section>
   </div>
   <div class="stack">
    ${S.admin ? `<section class="card admin"><h2>👑 Contexto base da OLC</h2><form class="stack" id="fAdmin"><label>Visível só no modo mestre<textarea name="contextoAdminOLC" rows="7">${esc(c.contextoAdminOLC)}</textarea></label><div class="acts"><button class="btn gold">Salvar contexto base</button><button type="button" class="btn" id="bAccess">Copiar link + código</button></div></form></section>` : ''}
-   <section class="card"><header><h2>Serviços e preços</h2></header><p class="mute small">Roteiros, procedimentos ou produtos que o robô pode oferecer.</p><div class="list" id="catalogo"></div><div class="acts" id="catActs"><button type="button" class="btn" id="bAddSrv">+ Adicionar serviço</button><button type="button" class="btn primary" id="bSaveSrv">Salvar catálogo</button></div></section>
-   <section class="card"><h2>Jeito de atender</h2><form class="stack" id="fAj">
+   <section class="card" id="cSrv"><header><h2>Serviços &amp; Preços</h2></header><p class="mute small">Roteiros, procedimentos ou produtos que o robô pode oferecer.</p><div class="list" id="catalogo"></div><div class="acts" id="catActs"><button type="button" class="btn" id="bAddSrv">+ Adicionar serviço</button><button type="button" class="btn primary" id="bSaveSrv">Salvar catálogo</button></div></section>
+   <section class="card"><h2>Jeito de Atender</h2><form class="stack" id="fAj">
     <label>Orientações do dono<textarea name="contextoCliente" rows="4">${esc(c.contextoCliente)}</textarea></label>
     <label>Tom de voz<textarea name="tomDeVoz" rows="2">${esc(c.tomDeVoz)}</textarea></label>
     <div class="row"><label>Atende das<input type="time" name="horarioInicio" value="${esc(c.horarioInicio)}"></label><label>Até<input type="time" name="horarioFim" value="${esc(c.horarioFim)}"></label></div>
@@ -272,14 +367,14 @@ function viewBot(v) {
     <button class="btn block">Salvar jeito de atender</button></form></section>
   </div></div>`;
   $('#catActs').style.marginTop = '14px';
-  drawStatus(); drawNotes(); drawCatalog(list(c.servicosCatalogo));
+  drawNotes(); drawCatalog(list(c.servicosCatalogo));
 
   $('#fNota').onsubmit = e => {
     e.preventDefault(); const f = e.target, texto = f.texto.value.trim(); if (!texto) { toast('Escreva o que o robô deve aprender.', true); return; }
     busy($('button', f), async () => {
       const slug = S.slug;
       const d = await call('add_context', { texto, autor: S.admin ? 'Equipe OLC' : S.client.nomeEmpresa, origem: S.admin ? 'Admin OLC' : 'App do Cliente' });
-      if (slug !== S.slug) return; applyClient(d.client); f.reset(); drawNotes(); toast('O robô já aprendeu.');
+      if (slug !== S.slug) return; applyClient(d.client); f.reset(); drawNotes(); const first = $('#notas>li'); if (first) { stagger([first], -30, 0); glow(first); } burst(); toast('O robô já aprendeu.');
     });
   };
   $('#fAj').onsubmit = e => {
@@ -299,22 +394,6 @@ function viewBot(v) {
     if (items.some(s => !s.nome)) { toast('Todo serviço precisa de um nome.', true); return; }
     busy(e.currentTarget, async () => { const d = await call('save_bot_settings', { servicosCatalogo: items }); applyClient(d.client); drawCatalog(list(S.client.servicosCatalogo)); toast('Catálogo salvo.'); });
   };
-}
-function drawStatus() {
-  const el = $('#cStatus'); if (!el) return;
-  const on = !!S.client.botAtivo, [cls, label, hint] = waInfo();
-  el.innerHTML = `<div class="status"><div><h2>${on ? 'Atendente ligado' : 'Atendente pausado'}</h2><p class="mute small">${on ? 'Pronto para responder.' : 'Não responde ninguém até você ligar.'}</p></div><button type="button" class="switch" role="switch" aria-checked="${on}" aria-label="Ligar ou pausar o atendente" id="bBot"></button></div>
-  <div class="status"><div><h3>WhatsApp</h3><p class="mute small">${hint}</p></div><span class="badge dot ${cls}">${label}</span></div>
-  <button type="button" class="btn ${cls === 'ok' ? '' : 'gold'} block" id="bConn">${cls === 'ok' ? 'Ver conexão do WhatsApp' : 'Conectar meu WhatsApp (QR Code / Código)'}</button>`;
-  $('#bConn').style.cssText = 'margin-top:14px;min-height:54px';
-  $('#bBot').onclick = async e => {
-    const b = e.currentTarget, next = !S.client.botAtivo;
-    if (b.disabled) return; b.disabled = true; b.setAttribute('aria-checked', next);
-    try { const d = await call('save_bot_settings', { botAtivo: next }); applyClient(d.client); toast(next ? 'Atendente ligado.' : 'Atendente pausado.'); }
-    catch (x) { toast(x.message, true); }
-    drawStatus();
-  };
-  $('#bConn').onclick = connectModal;
 }
 function drawNotes() {
   const el = $('#notas'); if (!el) return;
@@ -350,7 +429,7 @@ function connectModal() {
   modal.onclick = null;
   async function poll() {
     if (!alive || slug !== S.slug) return;
-    try { const d = await call('get_client', {}, 20000); S.wa = d.whatsappStatus || S.wa; applyClient(d.client); drawStatus(); } catch (e) {}
+    try { const d = await call('get_client', {}, 20000); S.wa = d.whatsappStatus || S.wa; applyClient(d.client); updateHero(); } catch (e) {}
     if (!alive) return;
     if (S.wa && S.wa.state === 'open') { $('#qr', modal).innerHTML = '<div class="qrbox"><h2>WhatsApp conectado ✓</h2></div>'; return; }
     if (++tries < 24) timer = setTimeout(poll, 5000);
@@ -362,7 +441,7 @@ function connectModal() {
       clearTimeout(timer);
       const d = await call('connect_whatsapp', phone ? { phone } : {}, 90000);
       if (!alive || slug !== S.slug) return;
-      S.wa = d.whatsappStatus || S.wa; drawStatus();
+      S.wa = d.whatsappStatus || S.wa; updateHero();
       const q = d.qr || {}, img = typeof q.base64 === 'string' && /^data:image\/(png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(q.base64) ? q.base64 : '';
       const box = $('#qr', modal);
       if (phone && q.pairingCode) box.innerHTML = `<div class="qrbox"><div><p>No WhatsApp, escolha “Conectar com número de telefone” e digite:</p><p class="pair">${esc(q.pairingCode)}</p></div></div>`;
@@ -383,8 +462,8 @@ function chipsFor() {
 }
 const chatOf = () => S.chats[S.slug] || (S.chats[S.slug] = []);
 function viewChat(v) {
-  v.innerHTML = head('Testar meu robô ao vivo', 'Respostas de verdade, usando o que está salvo. Se você confirmar uma reserva aqui, ela entra na sua Agenda.') + `<section class="chat" aria-label="Conversa de teste">
-  <div class="chat-head"><span class="ava" aria-hidden="true">${esc(S.client.nomeEmpresa.slice(0, 2).toUpperCase())}</span><div class="tx"><b>${esc(S.client.nomeEmpresa)}</b><small>Teste: reserva confirmada entra na Agenda</small></div><button type="button" class="iconbtn" id="bClear" aria-label="Limpar conversa de teste">${icon(I.trash)}</button></div>
+  v.innerHTML = head('Testar ao Vivo', 'Respostas de verdade, usando o que está salvo. Se você confirmar uma reserva aqui, ela entra na sua Agenda.') + `<section class="chat" aria-label="Conversa de teste">
+  <div class="chat-head"><span class="ava" aria-hidden="true">${esc(S.client.nomeEmpresa.slice(0, 2).toUpperCase())}</span><div class="tx"><b>${esc(S.client.nomeEmpresa)}</b><small id="chatSub"></small></div><button type="button" class="iconbtn" id="bClear" aria-label="Limpar conversa de teste">${icon(I.trash)}</button></div>
   <div class="msgs" id="msgs" aria-live="polite"></div>
   <div class="chips" id="chips">${chipsFor().map(t => `<button type="button">${esc(t)}</button>`).join('')}</div>
   <form class="compose" id="fMsg"><input name="m" placeholder="Escreva como se fosse um cliente" autocomplete="off" maxlength="600" aria-label="Mensagem de teste"><button class="send" aria-label="Enviar">${icon(I.send)}</button></form></section>`;
@@ -396,10 +475,12 @@ function viewChat(v) {
 function drawMsgs() {
   const el = $('#msgs'); if (!el) return;
   const m = chatOf();
+  const typing = S.busyChat === S.slug, sub = $('#chatSub');
+  if (sub) { sub.textContent = typing ? 'digitando...' : 'Teste: reserva confirmada entra na Agenda'; sub.classList.toggle('is-typing', typing); }
   el.innerHTML = (m.length ? m.map(x => x.role === 'sys'
     ? `<div class="sys">${esc(x.content)}${x.booking ? '<button type="button" class="btn" data-goagenda>Ver na Agenda</button>' : ''}</div>`
     : x.content.split(/\n{2,}/).map(b => `<div class="bubble ${x.role === 'user' ? 'out' : 'in'}">${esc(b)}</div>`).join('')).join('')
-    : '<div class="sys">Mande uma pergunta ou toque numa sugestão abaixo.</div>') + (S.busyChat === S.slug ? '<div class="typing" aria-label="Digitando"><i></i><i></i><i></i></div>' : '');
+    : '<div class="sys">Mande uma pergunta ou toque numa sugestão abaixo.</div>') + (typing ? '<div class="typing" aria-label="Digitando"><i></i><i></i><i></i></div>' : '');
   const g = $('[data-goagenda]', el); if (g) g.onclick = () => show('agenda');
   el.scrollTop = el.scrollHeight;
 }
@@ -410,10 +491,13 @@ async function send(text) {
   chat.push({ role: 'user', content: text }); S.busyChat = slug; drawMsgs();
   try {
     const d = await call('test_chat', { mensagem: text, historico }, 90000);
-    const reply = list(d.baloes).length ? d.baloes.slice(0, 2).join('\n\n') : String(d.reply || '');
+    // às vezes a resposta chega com "\n" escrito como texto: vira quebra de linha e no máximo 2 balões
+    const raw = list(d.baloes).length ? d.baloes.join('\n\n') : String(d.reply || '');
+    const parts = raw.replace(/\\r/g, '').replace(/\\n/g, '\n').split(/\n{2,}/).map(x => x.trim()).filter(Boolean);
+    const reply = parts.length > 2 ? [parts[0], parts.slice(1).join('\n')].join('\n\n') : parts.join('\n\n');
     if (reply) chat.push({ role: 'assistant', content: reply });
     if (d.novoAgendamento) chat.push({ role: 'sys', booking: true, content: `Agendamento criado na Agenda: ${d.novoAgendamento.servico}, ${d.novoAgendamento.dataHora}.` });
-    if (slug === S.slug) applyClient(d.client);
+    if (slug === S.slug) { applyClient(d.client); if (d.novoAgendamento) burst(); }
   } catch (e) { chat.push({ role: 'sys', content: e.message }); }
   S.busyChat = false; if (slug === S.slug) drawMsgs();
 }
@@ -421,8 +505,8 @@ async function send(text) {
 /* ---------- aba 3: agenda e conversas ---------- */
 const STATUS = { confirmado: ['ok', 'Confirmado'], concluido: ['', 'Concluído'], cancelado: ['off', 'Cancelado'] };
 function viewAgenda(v) {
-  v.innerHTML = head('Agenda e conversas', 'O que foi marcado e quem falou com o seu atendente.') + `<div class="cols">
-  <section class="card"><header><h2>Agendamentos</h2><button type="button" class="btn primary" id="bNewAg">+ Marcar</button></header><div class="filterbar" id="agF" role="group" aria-label="Filtrar agendamentos"></div><ul class="list" id="ags"></ul></section>
+  v.innerHTML = head('Agenda &amp; Conversas', 'O que foi marcado e quem falou com o seu atendente.') + `<div class="cols">
+  <section class="card" id="cAgenda"><header><h2>Agendamentos</h2><button type="button" class="btn primary" id="bNewAg">+ Marcar</button></header><div class="filterbar" id="agF" role="group" aria-label="Filtrar agendamentos"></div><ul class="list" id="ags"></ul></section>
   <section class="card"><h2>Conversas do WhatsApp</h2><div class="list" id="convs"></div></section></div>`;
   drawBookings(); drawConvs();
   $('#bNewAg').onclick = bookingModal;
@@ -452,7 +536,7 @@ function bookingModal() {
     const n = Object.fromEntries(new FormData(f).entries());
     const dt = new Date(n.dataHora);
     n.dataHora = dt.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }) + ' às ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    busy($('button.primary', f), async () => { if (slug !== S.slug) return; const d = await call('update_booking', { novoAgendamento: n }); applyClient(d.client); modal.close(); drawBookings(); toast('Agendamento salvo.'); });
+    busy($('button.primary', f), async () => { if (slug !== S.slug) return; const d = await call('update_booking', { novoAgendamento: n }); applyClient(d.client); S.agFilter = 'todos'; modal.close(); drawBookings(); const first = $('#ags>li'); if (first) { stagger([first], -30, 0); glow(first); } burst(); toast('Agendamento salvo.'); });
   };
 }
 function drawConvs() {
@@ -470,40 +554,6 @@ function drawConvs() {
     const tel = digits(b.dataset.pause), match = paused.find(p => p.slice(-8) === tel.slice(-8));
     busy(b, async () => { const d = await call('toggle_pause_contact', { telefone: match || tel }); applyClient(d.client); drawConvs(); toast(match ? 'A IA voltou a atender este contato.' : 'IA pausada. A conversa é sua.'); });
   };
-}
-
-/* ---------- aba 4: site ---------- */
-const SITEF = ['tituloHero', 'subtituloHero', 'avisoTopo', 'whatsappAtendimento'];
-function viewSite(v) {
-  const c = S.client, cfg = c.siteConfig || {}, url = safeUrl(c.siteUrl);
-  v.innerHTML = head('Meu site', 'Seu app de cortesia: veja o site e peça mudanças sem complicação.') + `<div class="cols">
-  <div class="stack">
-   <section class="card"><header><h2>Site no ar</h2>${url ? `<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Abrir site ↗</a>` : ''}</header>${url ? `<span class="url">${esc(url)}</span><div class="preview" id="prev"><iframe src="${esc(url)}" title="Prévia do site" loading="lazy" sandbox="allow-scripts allow-same-origin" referrerpolicy="no-referrer" tabindex="-1"></iframe></div>` : '<p class="empty">Site ainda não cadastrado.</p>'}</section>
-   <section class="card"><h2>Pedir alteração ou enviar novas fotos para meu site</h2><form class="stack" id="fPed"><label>O que você quer mudar?<textarea name="pedido" rows="4" maxlength="1500" placeholder="Descreva a mudança. Para fotos, cole um link (Google Drive, por exemplo)."></textarea></label><p class="mute small">Este campo não anexa arquivos. Cole o link das fotos ou avise a OLC pelo WhatsApp.</p><button class="btn primary block">Registrar pedido</button></form><ul class="list" id="peds"></ul></section>
-  </div>
-  <section class="card"><h2>Textos principais</h2><p class="mute small">Fica registrado para a equipe OLC aplicar. O site não muda na hora.</p><form class="stack" id="fSite">
-   <label>Título principal<input name="tituloHero" value="${esc(cfg.tituloHero)}" maxlength="120"></label>
-   <label>Subtítulo<textarea name="subtituloHero" rows="3" maxlength="300">${esc(cfg.subtituloHero)}</textarea></label>
-   <label>Aviso do topo<input name="avisoTopo" value="${esc(cfg.avisoTopo)}" maxlength="160"></label>
-   <label>WhatsApp de atendimento<input name="whatsappAtendimento" inputmode="tel" value="${esc(cfg.whatsappAtendimento)}" maxlength="20"></label>
-   <button class="btn block">Salvar textos</button></form></section></div>`;
-  drawRequests();
-  const pv = $('#prev');
-  if (pv) { const fit = () => { if (pv.isConnected) $('iframe', pv).style.transform = `scale(${pv.clientWidth / 1280})`; }; new ResizeObserver(fit).observe(pv); fit(); }
-  $('#fSite').onsubmit = e => {
-    e.preventDefault(); const f = e.target, siteConfig = {};
-    SITEF.forEach(k => siteConfig[k] = f.elements[k].value.trim());
-    busy($('button', f), async () => { const d = await call('save_site_config', { siteConfig }); applyClient(d.client); toast('Textos registrados para a equipe OLC.'); });
-  };
-  $('#fPed').onsubmit = e => {
-    e.preventDefault(); const f = e.target, pedido = f.pedido.value.trim(); if (!pedido) { toast('Escreva o pedido.', true); return; }
-    busy($('button', f), async () => { const d = await call('save_site_config', { siteConfig: {}, novoPedidoAlteracao: pedido }); applyClient(d.client); f.reset(); drawRequests(); toast('Pedido registrado.'); });
-  };
-}
-function drawRequests() {
-  const el = $('#peds'); if (!el) return;
-  const items = list(S.client.siteConfig && S.client.siteConfig.alteracoesSolicitadas);
-  el.innerHTML = items.map(p => `<li class="item"><div class="item-top"><span class="badge warn">${esc(p.status || 'Registrado')}</span><span class="small mute">${esc(when(p.criadoEm))}</span></div><p class="kv">${esc(p.pedido)}</p></li>`).join('') || '<li class="empty">Nenhum pedido ainda.</li>';
 }
 
 /* ---------- início ---------- */
