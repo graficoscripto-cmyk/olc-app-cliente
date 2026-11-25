@@ -1,21 +1,17 @@
-/* OLC · App Único do Cliente. Nenhuma senha, PIN ou chave fica neste arquivo. */
+/* OLC · Painel do Agente do Cliente (Clean White + Mini Quiz Onboarding). Nenhuma senha, PIN ou chave fica neste arquivo. */
 (function () {
 'use strict';
 const API = 'https://n8n.187.53.124.11.sslip.io/webhook/olc-cliente-api';
-const QUICK = [
-  { slug: 'lancha-refugio', nome: 'Lancha Refúgio Ilhabela', nicho: 'Passeio de lancha', sigla: 'LR' },
-  { slug: 'evo-care', nome: 'Evo Care Massoterapia', nicho: 'Massoterapia', sigla: 'EC' },
-  { slug: 'marevia-turismo', nome: 'Marevia Turismo', nicho: 'Turismo náutico', sigla: 'MT' }
-];
 const TABS = [
-  ['bot', 'Meu Atendente IA', 'Atendente', 'M12 3v3M7 6h10a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3zM9 12h.01M15 12h.01M9.5 16h5M2 11v3M22 11v3'],
-  ['chat', 'Testar ao Vivo', 'Testar ao Vivo', 'M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.8L3 21l1.9-5A8.4 8.4 0 1 1 21 11.5z'],
+  ['bot', 'Meu Agente', 'Agente', 'M12 3v3M7 6h10a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3zM9 12h.01M15 12h.01M9.5 16h5M2 11v3M22 11v3'],
+  ['chat', 'Testar ao Vivo', 'Testar', 'M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.8L3 21l1.9-5A8.4 8.4 0 1 1 21 11.5z'],
   ['agenda', 'Agenda & Conversas', 'Agenda', 'M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM8.5 14.5l2.3 2.3 4.7-4.6']
 ];
 const I = {
   x: 'M6 6l12 12M18 6L6 18', trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
   out: 'M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10', send: 'M4 12l16-8-6 17-3-7z', refresh: 'M20 11a8 8 0 1 0-2.3 6M20 4v7h-7',
-  check: 'M5 12.5l4.500 4.500L19 7.500', crown: 'M4 17l-1-9 5 4 4-7 4 7 5-4-1 9zM5 20h14'
+  check: 'M5 12.5l4.500 4.500L19 7.500', crown: 'M4 17l-1-9 5 4 4-7 4 7 5-4-1 9zM5 20h14',
+  spark: 'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3zM19 16l.9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9L19 16z'
 };
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -32,6 +28,7 @@ const store = {
   del(a, k) { try { window[a].removeItem(k); } catch (e) {} }
 };
 const sessKey = slug => 'olc.pin.' + slug;
+const quizKey = slug => 'olc.quiz.' + slug;
 const savedPin = slug => store.get('localStorage', sessKey(slug)) || store.get('sessionStorage', sessKey(slug)) || '';
 const ADMIN = 'olc.mestre';
 
@@ -51,7 +48,6 @@ async function api(body, ms = 60000) {
   if (Array.isArray(data)) data = data[0];
   if (!data || data.ok !== true) {
     const m = String(data && data.error || ''), code = Number(data && data.code) || 0;
-    // só repassa mensagens conhecidas; erros técnicos não aparecem para o cliente
     const err = new Error(code === 429 || /código|PIN|Chave|Autentica|Credenciais|não encontrado|Digite|Informe|inválid/i.test(m) ? m : 'Não deu certo agora. Tente de novo em instantes.');
     err.code = code; throw err;
   }
@@ -71,12 +67,13 @@ async function busy(btn, fn) {
 }
 const modal = $('#modal');
 let onModalClose = null;
-function openModal(title, html) {
+function openModal(title, html, wide) {
+  modal.className = 'modal' + (wide ? ' wide' : '');
   modal.innerHTML = `<div class="modal-head"><h2 id="modalTitle">${esc(title)}</h2><button type="button" class="iconbtn" data-close aria-label="Fechar">${icon(I.x)}</button></div>${html}`;
   if (!modal.open) modal.showModal();
 }
 modal.addEventListener('click', e => { if (e.target.closest('[data-close]')) modal.close(); });
-modal.addEventListener('close', () => { if (onModalClose) onModalClose(); onModalClose = null; modal.innerHTML = ''; });
+modal.addEventListener('close', () => { if (onModalClose) onModalClose(); onModalClose = null; modal.innerHTML = ''; modal.className = 'modal'; });
 function confirmBox(title, text, yes) {
   return new Promise(res => {
     openModal(title, `<p class="mute">${esc(text)}</p><div class="acts" data-confirm><button type="button" class="btn danger" data-yes>${esc(yes)}</button><button type="button" class="btn ghost" data-close>Voltar</button></div>`);
@@ -91,7 +88,7 @@ function applyClient(c) { if (c && c.slug === S.slug) { S.client = c; updateHero
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 function stagger(els, dx = 0, dy = 16) {
   if (calm()) return;
-  els.forEach((el, i) => el.animate([{ opacity: 0, transform: `translate(${dx}px, ${dy}px)` }, { opacity: 1, transform: 'none' }], { duration: 520, delay: Math.min(i, 8) * 65, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'backwards' }));
+  els.forEach((el, i) => el.animate([{ opacity: 0, transform: `translate(${dx}px, ${dy}px)` }, { opacity: 1, transform: 'none' }], { duration: 480, delay: Math.min(i, 8) * 55, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'backwards' }));
 }
 function radar(cls) {
   return `<div class="radar ${cls || ''}" aria-hidden="true"><i class="wave"></i><i class="wave"></i><i class="wave"></i><i class="sweep"></i>
@@ -108,12 +105,12 @@ const NODE = {
 };
 function heroState() {
   const on = !!S.client.botAtivo, open = !!(S.wa && S.wa.state === 'open');
-  if (!on) return { key: 'paused', seal: 'Atendente pausado', title: 'Em pausa.', text: 'Não responde ninguém até você ligar.' };
-  if (open) return { key: 'live', seal: 'Atendendo ao vivo', title: 'No ar agora.', text: 'Ligado e conectado ao seu WhatsApp.' };
-  return { key: 'ready', seal: 'Falta conectar o WhatsApp', title: 'Quase lá.', text: 'Robô ligado. Conecte o WhatsApp para atender.' };
+  if (!on) return { key: 'paused', seal: 'Agente em pausa', title: 'Em pausa.', text: 'O seu Agente não responde ninguém até você ligar.' };
+  if (open) return { key: 'live', seal: 'Agente atendendo ao vivo', title: 'No ar agora.', text: 'Seu Agente está ligado e conectado ao seu WhatsApp.' };
+  return { key: 'ready', seal: 'Falta conectar o WhatsApp', title: 'Agente pronto.', text: 'Seu Agente está ligado. Conecte o WhatsApp para ele atender.' };
 }
 const KPIS = [
-  ['notas', 'Regras Ativas', () => list(S.client.notasContexto).length],
+  ['notas', 'Regras Ativas no Agente', () => list(S.client.notasContexto).length],
   ['srv', 'Serviços no Catálogo', () => list(S.client.servicosCatalogo).length],
   ['ags', 'Reservas na Agenda', () => list(S.client.agendamentos).filter(a => a.status !== 'cancelado').length]
 ];
@@ -124,20 +121,21 @@ function buildHero() {
   <div class="flow" role="img" id="hFlow">
    <div class="node n-wa">${icon(NODE.wa)}<span>WhatsApp</span></div>
    <div class="link l1"><u><i></i></u><u class="back"><i></i></u></div>
-   <div class="node n-ia">${icon(NODE.ia)}<span>Motor IA</span></div>
+   <div class="node n-ia">${icon(NODE.ia)}<span>Meu Agente</span></div>
    <div class="link l2"><u><i></i></u><u class="back"><i></i></u></div>
    <div class="node n-ag">${icon(TABS[2][3])}<span>Agenda</span></div>
   </div>
-  <div class="h-acts"><div class="power"><button type="button" class="switch" role="switch" id="bBot" aria-label="Ligar ou pausar o atendente"></button><span id="hPower"></span></div><button type="button" class="btn" id="bConn"></button></div>
+  <div class="h-acts"><div class="power"><button type="button" class="switch" role="switch" id="bBot" aria-label="Ligar ou pausar o Agente"></button><span id="hPower"></span></div><button type="button" class="btn" id="bConn"></button><button type="button" class="btn gold" id="bQuiz">${icon(I.spark)}Personalizar Agente (Quiz)</button></div>
   <div class="kpis">${KPIS.map(k => `<button type="button" class="kpi" data-kpi="${k[0]}"><b data-n></b><span>${k[1]}</span><em aria-hidden="true">${'<i></i>'.repeat(8)}</em></button>`).join('')}</div>`;
   $('#bBot').onclick = async e => {
     const b = e.currentTarget, next = !S.client.botAtivo;
     if (b.disabled) return; b.disabled = true; b.setAttribute('aria-checked', next);
-    try { const d = await call('save_bot_settings', { botAtivo: next }); applyClient(d.client); toast(next ? 'Atendente ligado.' : 'Atendente pausado.'); burst(); }
+    try { const d = await call('save_bot_settings', { botAtivo: next }); applyClient(d.client); toast(next ? 'Agente ligado.' : 'Agente em pausa.'); burst(); }
     catch (x) { toast(x.message, true); }
     b.disabled = false; updateHero();
   };
   $('#bConn').onclick = connectModal;
+  $('#bQuiz').onclick = () => openQuiz(false);
   el.onclick = e => {
     const k = e.target.closest('[data-kpi]'); if (!k) return;
     const to = k.dataset.kpi, tab = to === 'ags' ? 'agenda' : 'bot';
@@ -152,9 +150,9 @@ function updateHero() {
   const st = heroState(), on = !!S.client.botAtivo, open = !!(S.wa && S.wa.state === 'open');
   el.dataset.state = st.key;
   $('#hSeal').textContent = st.seal; $('#hTitle').textContent = st.title; $('#hText').textContent = st.text;
-  $('#bBot').setAttribute('aria-checked', on); $('#hPower').textContent = on ? 'Atendente ligado' : 'Atendente pausado';
-  const c = $('#bConn'); c.textContent = open ? 'WhatsApp conectado ✓' : 'Conectar meu WhatsApp (QR Code / Código)'; c.className = 'btn ' + (open ? '' : 'gold');
-  $('#hFlow').setAttribute('aria-label', open ? 'Fluxo ativo entre WhatsApp, motor de inteligência artificial e agenda' : 'WhatsApp ainda não conectado ao motor de inteligência artificial');
+  $('#bBot').setAttribute('aria-checked', on); $('#hPower').textContent = on ? 'Agente ligado' : 'Agente em pausa';
+  const c = $('#bConn'); c.textContent = open ? 'WhatsApp conectado ✓' : 'Conectar WhatsApp (QR / Código)'; c.className = 'btn ' + (open ? '' : 'primary');
+  $('#hFlow').setAttribute('aria-label', open ? 'Fluxo ativo entre WhatsApp, seu Agente e sua Agenda' : 'WhatsApp ainda não conectado ao seu Agente');
   KPIS.forEach(([key, label, get]) => {
     const card = $(`[data-kpi="${key}"]`, el), n = get(), prev = card.dataset.v;
     card.dataset.v = n; $('[data-n]', card).textContent = n; card.setAttribute('aria-label', `${label}: ${n}`);
@@ -164,61 +162,206 @@ function updateHero() {
 }
 function pulse(el) {
   if (!el || calm()) return;
-  el.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08)', offset: .35 }, { transform: 'scale(1)' }], { duration: 650, easing: 'cubic-bezier(.22,1,.36,1)' });
+  el.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.04)', offset: .35 }, { transform: 'scale(1)' }], { duration: 550, easing: 'cubic-bezier(.22,1,.36,1)' });
   glow(el);
 }
 function glow(el) {
   if (!el || calm()) return;
   const g = document.createElement('i'); g.className = 'glow'; el.appendChild(g);
-  g.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'scale(1)', offset: .25 }, { opacity: 0, transform: 'scale(1.02)' }], { duration: 1500, easing: 'ease-out' }).onfinish = () => g.remove();
+  g.animate([{ opacity: 0, transform: 'scale(.98)' }, { opacity: 1, transform: 'scale(1)', offset: .25 }, { opacity: 0, transform: 'scale(1.01)' }], { duration: 1300, easing: 'ease-out' }).onfinish = () => g.remove();
 }
 function burst() {
   const r = $('#hero .radar'); if (!r || calm()) return;
   const g = document.createElement('i'); g.className = 'burst'; r.appendChild(g);
-  g.animate([{ opacity: .9, transform: 'scale(.3)' }, { opacity: 0, transform: 'scale(1.35)' }], { duration: 900, easing: 'cubic-bezier(.22,1,.36,1)' }).onfinish = () => g.remove();
+  g.animate([{ opacity: .8, transform: 'scale(.35)' }, { opacity: 0, transform: 'scale(1.3)' }], { duration: 850, easing: 'cubic-bezier(.22,1,.36,1)' }).onfinish = () => g.remove();
 }
 
-/* ---------- entrada ---------- */
+/* ---------- Mini Quiz de Onboarding (5 passos) ---------- */
+const TONES = [
+  ['Simpático, acolhedor e prestativo', '🤝 Simpático e acolhedor', 'Recebe com simpatia, tira dúvidas com paciência e passa segurança.'],
+  ['Direto ao ponto, comercial e focado em fechar reserva', '⚡ Comercial e direto ao ponto', 'Respostas objetivas que conduzem o cliente rapidamente para o agendamento.'],
+  ['Sofisticado, consultivo e calmo', '✨ Consultivo e sofisticado', 'Linguagem elegante, ideal para serviços premium, clínicas e passeios exclusivos.'],
+  ['Descontraído, leve e natural', '🏖️ Leve e descontraído', 'Conversa natural de WhatsApp, ideal para turismo, lazer e atendimento diário.']
+];
+function needsInitialQuiz(c) {
+  if (!c) return false;
+  if (store.get('localStorage', quizKey(c.slug))) return false;
+  const hasQuizNote = list(c.notasContexto).some(n => /Quiz Inicial/i.test(String(n.origem || '')));
+  if (hasQuizNote) return false;
+  // Se a conta acabou de ser criada (sem contextoCliente preenchido), abre na hora
+  return !String(c.contextoCliente || '').trim();
+}
+function openQuiz(isFirstTime) {
+  const c = S.client; if (!c) return;
+  let step = 1;
+  const total = 5;
+  const state = {
+    nicho: c.nicho || '',
+    resumoServicos: c.contextoCliente || '',
+    precosPagamento: '',
+    localRegras: '',
+    horarioInicio: c.horarioInicio || '07:00',
+    horarioFim: c.horarioFim || '22:00',
+    tomDeVoz: c.tomDeVoz || TONES[0][0],
+    restricoes: '',
+    telefoneDono: c.telefoneDono || ''
+  };
+  function renderStep() {
+    const pct = Math.round((step / total) * 100);
+    let body = '';
+    if (step === 1) {
+      const chips = ['Passeios de Lancha / Barco', 'Clínica / Massoterapia / Estética', 'Consultório / Saúde', 'Turismo & Experiências', 'Serviços Locais'];
+      body = `<div class="q-step">
+        <span class="badge ok">Passo 1 de 5 · Sobre o seu negócio</span>
+        <h3>O que a ${esc(c.nomeEmpresa)} oferece aos clientes?</h3>
+        <p class="mute small">Toque em uma categoria ou descreva abaixo com suas palavras.</p>
+        <div class="q-chips">${chips.map(ch => `<button type="button" data-qchip="${esc(ch)}" class="${state.nicho.toLowerCase() === ch.toLowerCase() ? 'on' : ''}">${esc(ch)}</button>`).join('')}</div>
+        <label>Ramo de atuação<input id="qNicho" value="${esc(state.nicho)}" placeholder="Ex.: Passeio de lancha privativa, Clínica de massoterapia"></label>
+        <label>Principais serviços, passeios ou atendimentos<textarea id="qResumo" rows="3" placeholder="Ex.: Fazemos passeios privativos de lancha para até 8 pessoas, com paradas nas ilhas e praias mais bonitas.">${esc(state.resumoServicos)}</textarea></label>
+      </div>`;
+    } else if (step === 2) {
+      body = `<div class="q-step">
+        <span class="badge ok">Passo 2 de 5 · Valores e Reserva</span>
+        <h3>Como funcionam seus preços e a forma de pagamento?</h3>
+        <p class="mute small">O seu Agente usa isso para responder orçamentos e explicar como garantir a vaga.</p>
+        <label>Valores, pacotes ou condição de reserva<textarea id="qPrecos" rows="4" placeholder="Ex.: Roteiro Norte R$ 1.800 (até 8 pessoas). Para reservar pedimos sinal de 30% no Pix e o restante no dia do atendimento. Aceitamos cartão.">${esc(state.precosPagamento)}</textarea></label>
+      </div>`;
+    } else if (step === 3) {
+      body = `<div class="q-step">
+        <span class="badge ok">Passo 3 de 5 · Horários e Local</span>
+        <h3>Onde acontece o atendimento e em qual horário o Agente atende?</h3>
+        <div class="row">
+          <label>Agente atende das<input type="time" id="qIni" value="${esc(state.horarioInicio)}"></label>
+          <label>Até<input type="time" id="qFim" value="${esc(state.horarioFim)}"></label>
+        </div>
+        <label>Endereço, ponto de encontro ou regras de horário<textarea id="qLocal" rows="3" placeholder="Ex.: Saída da Marina Porto às 9h30. Recomendamos chegar 20 minutos antes. Atendemos também em domicílio.">${esc(state.localRegras)}</textarea></label>
+      </div>`;
+    } else if (step === 4) {
+      body = `<div class="q-step">
+        <span class="badge ok">Passo 4 de 5 · Personalidade</span>
+        <h3>Qual o jeito de falar ideal para o seu Agente?</h3>
+        <p class="mute small">Escolha o estilo de conversa no WhatsApp (sempre em mensagens curtas e naturais).</p>
+        <div class="q-tones">${TONES.map(([val, title, desc]) => `<button type="button" class="q-tone ${state.tomDeVoz === val ? 'on' : ''}" data-tone="${esc(val)}"><b>${esc(title)}</b><small>${esc(desc)}</small></button>`).join('')}</div>
+        <label>Ou personalize o tom de voz<input id="qTom" value="${esc(state.tomDeVoz)}"></label>
+      </div>`;
+    } else {
+      body = `<div class="q-step">
+        <span class="badge ok">Passo 5 de 5 · Regras de Ouro &amp; Alertas</span>
+        <h3>O que o seu Agente NÃO deve prometer e onde você recebe os avisos?</h3>
+        <label>Restrições ou cuidados importantes (opcional)<textarea id="qRestr" rows="3" placeholder="Ex.: Não dar desconto sem me consultar antes; não confirmar reserva para o mesmo dia sem checar disponibilidade.">${esc(state.restricoes)}</textarea></label>
+        <label>Seu WhatsApp para receber aviso a cada novo agendamento<input id="qTel" inputmode="tel" placeholder="55 + DDD + Número (ex.: 5512999999999)" value="${esc(state.telefoneDono)}"></label>
+      </div>`;
+    }
+    openModal(isFirstTime ? '✨ Vamos configurar o seu Agente' : '✨ Configurar meu Agente (Mini Quiz)', `
+      <div class="q-prog"><div class="q-bar" style="width:${pct}%"></div></div>
+      ${body}
+      <div class="acts q-nav">
+        ${step > 1 ? '<button type="button" class="btn ghost" id="qPrev">← Voltar</button>' : '<span></span>'}
+        ${step < total ? '<button type="button" class="btn primary" id="qNext">Continuar →</button>' : '<button type="button" class="btn primary" id="qFinish">Concluir e Ativar no Agente ✓</button>'}
+      </div>`, true);
+
+    modal.onclick = e => {
+      if (e.target.closest('[data-close]')) { modal.close(); return; }
+      const ch = e.target.closest('[data-qchip]');
+      if (ch) {
+        state.nicho = ch.dataset.qchip;
+        const inp = $('#qNicho', modal); if (inp) inp.value = state.nicho;
+        $$('[data-qchip]', modal).forEach(b => b.classList.toggle('on', b === ch));
+      }
+      const tn = e.target.closest('[data-tone]');
+      if (tn) {
+        state.tomDeVoz = tn.dataset.tone;
+        const inp = $('#qTom', modal); if (inp) inp.value = state.tomDeVoz;
+        $$('[data-tone]', modal).forEach(b => b.classList.toggle('on', b === tn));
+      }
+    };
+    function saveCurrentInputs() {
+      if (step === 1) { state.nicho = ($('#qNicho', modal)?.value || '').trim() || state.nicho; state.resumoServicos = ($('#qResumo', modal)?.value || '').trim(); }
+      if (step === 2) { state.precosPagamento = ($('#qPrecos', modal)?.value || '').trim(); }
+      if (step === 3) { state.horarioInicio = $('#qIni', modal)?.value || '07:00'; state.horarioFim = $('#qFim', modal)?.value || '22:00'; state.localRegras = ($('#qLocal', modal)?.value || '').trim(); }
+      if (step === 4) { state.tomDeVoz = ($('#qTom', modal)?.value || '').trim() || state.tomDeVoz; }
+      if (step === 5) { state.restricoes = ($('#qRestr', modal)?.value || '').trim(); state.telefoneDono = ($('#qTel', modal)?.value || '').trim(); }
+    }
+    const prev = $('#qPrev', modal), next = $('#qNext', modal), fin = $('#qFinish', modal);
+    if (prev) prev.onclick = () => { saveCurrentInputs(); step--; renderStep(); };
+    if (next) next.onclick = () => {
+      saveCurrentInputs();
+      if (step === 1 && !state.resumoServicos) { toast('Conte rapidamente o que sua empresa oferece.', true); $('#qResumo', modal)?.focus(); return; }
+      step++; renderStep();
+    };
+    if (fin) fin.onclick = e => {
+      saveCurrentInputs();
+      busy(e.currentTarget, async () => {
+        const partes = [
+          state.resumoServicos ? `Sobre a empresa e serviços: ${state.resumoServicos}` : '',
+          state.precosPagamento ? `Valores e pagamento: ${state.precosPagamento}` : '',
+          state.localRegras ? `Local, horários e regras: ${state.localRegras}` : '',
+          state.restricoes ? `Cuidados e restrições: ${state.restricoes}` : ''
+        ].filter(Boolean);
+        const contextoFinal = partes.join('\n');
+        const d1 = await call('save_bot_settings', {
+          contextoCliente: contextoFinal || c.contextoCliente,
+          tomDeVoz: state.tomDeVoz || c.tomDeVoz,
+          horarioInicio: state.horarioInicio,
+          horarioFim: state.horarioFim,
+          telefoneDono: state.telefoneDono
+        });
+        applyClient(d1.client);
+        if (partes.length) {
+          const d2 = await call('add_context', {
+            texto: `Resumo do Quiz Inicial:\n${contextoFinal}`,
+            autor: S.client.nomeEmpresa,
+            origem: 'Quiz Inicial'
+          });
+          applyClient(d2.client);
+        }
+        store.set('localStorage', quizKey(S.slug), true);
+        modal.close();
+        show(S.tab);
+        burst();
+        toast('Pronto! O seu Agente já aprendeu tudo sobre a sua empresa.');
+      });
+    };
+  }
+  renderStep();
+}
+
+/* ---------- entrada (sem lista pública de empresas) ---------- */
 function gate(prefill = '', error = '') {
-  S.client = null; S.wa = null; document.title = 'OLC · Seu atendimento';
-  const quick = S.linkMode ? '' : '<div class="picker"><h2>Escolha a empresa</h2><div class="quick" data-quick></div></div>';
+  S.client = null; S.wa = null; document.title = 'OLC · Meu Agente';
   $('#app').innerHTML = `<main class="gate">
   <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
-  <div class="gate-top"><div class="logo"><img src="icon.svg" alt="" width="38" height="38"><span>OLC Digital</span></div><button type="button" class="master-btn" data-master>👑 Modo Mestre OLC (Gustavo)</button></div>
+  <div class="gate-top"><div class="logo"><img src="icon.svg?v=4" alt="" width="38" height="38"><span>OLC · Meu Agente</span></div><button type="button" class="master-btn" data-master>👑 Modo Mestre OLC</button></div>
   <div class="gate-body">
-   <div class="gate-copy">${radar('gate-radar')}<h1>Seu atendente no WhatsApp, <em>sempre por perto.</em></h1><p>Ensine, teste ao vivo e acompanhe o que foi marcado.</p></div>
+   <div class="gate-copy">${radar('gate-radar')}<span class="pill-tag">Agente Comercial &amp; Atendimento 24h</span><h1>Seu Agente no WhatsApp, <em>sempre pronto para atender.</em></h1><p>Personalize no Mini Quiz inicial, conecte seu WhatsApp em segundos e acompanhe cada agendamento em tempo real.</p>
+   <div class="gate-steps">
+     <div class="g-step"><b>1</b><span>Responda o Mini Quiz rápido sobre seu negócio</span></div>
+     <div class="g-step"><b>2</b><span>Conecte seu WhatsApp por QR Code ou código</span></div>
+     <div class="g-step"><b>3</b><span>Seu Agente atende, tira dúvidas e agenda 24h</span></div>
+   </div></div>
    <div class="stack">
-    ${quick}
     <form class="card stack" id="login" novalidate>
-     <h2>Entrar no meu painel</h2>
-     <label>Código da empresa<input name="slug" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="nome-da-empresa" value="${esc(prefill)}" required></label>
-     <label>Código de acesso<input name="pin" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" required></label>
-     <label class="check"><input type="checkbox" name="keep" checked>Lembrar neste aparelho</label>
+     <h2>Entrar no painel do meu Agente</h2>
+     <p class="mute small">Use o código da empresa e a chave recebida no seu WhatsApp.</p>
+     <label>Identificador da empresa<input name="slug" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="ex.: minha-empresa" value="${esc(prefill)}" required></label>
+     <label>Código de acesso<input name="pin" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Digite seu código de acesso" required></label>
+     <label class="check"><input type="checkbox" name="keep" checked>Manter conectado neste aparelho</label>
      <p class="err" role="alert">${esc(error)}</p>
-     <button class="btn primary block" type="submit">Entrar</button>
+     <button class="btn primary block" type="submit">Acessar Meu Agente</button>
     </form>
    </div>
   </div></main>`;
-  stagger($$('.gate-copy>*,.picker,#login'), 0, 18);
-  const box = $('[data-quick]');
-  if (box) box.innerHTML = QUICK.map(q => `<button type="button" data-q="${q.slug}" aria-pressed="${q.slug === prefill}"><span class="ava" aria-hidden="true">${q.sigla}</span><span class="tx"><b>${esc(q.nome)}</b><small>${esc(q.nicho)} · ${savedPin(q.slug) ? 'abre com 1 toque' : 'pede o código na 1ª vez'}</small></span></button>`).join('');
+  stagger($$('.gate-copy>*,.gate-steps,#login'), 0, 16);
   const f = $('#login');
   f.onsubmit = e => {
     e.preventDefault();
     const slug = f.slug.value.trim().toLowerCase().replace(/\s+/g, '-'), pin = f.pin.value.trim();
-    if (!slug || !pin) { $('.err', f).textContent = 'Preencha o código da empresa e o código de acesso.'; return; }
+    if (!slug || !pin) { $('.err', f).textContent = 'Preencha o identificador da empresa e o código de acesso.'; return; }
     busy($('button[type=submit]', f), async () => { try { await enter(slug, pin, f.keep.checked); } catch (x) { $('.err', f).textContent = x.message; } });
-  };
-  if (box) box.onclick = e => {
-    const b = e.target.closest('[data-q]'); if (!b) return;
-    const slug = b.dataset.q, pin = savedPin(slug);
-    f.slug.value = slug; $$('[data-q]', box).forEach(x => x.setAttribute('aria-pressed', x === b));
-    if (pin) busy(b, async () => { try { await enter(slug, pin, null); } catch (x) { if (x.code === 401) { store.del('localStorage', sessKey(slug)); store.del('sessionStorage', sessKey(slug)); } $('.err', f).textContent = x.message; } });
-    else { $('.err', f).textContent = ''; f.pin.focus({ preventScroll: true }); f.scrollIntoView({ block: 'center', behavior: calm() ? 'auto' : 'smooth' }); toast('Digite o código de acesso. Depois é só 1 toque neste aparelho.'); }
   };
   $('[data-master]').onclick = master;
 }
-async function enter(slug, pin, keep, viaAdmin) {
+async function enter(slug, pin, keep, viaAdmin, forceQuiz) {
   const d = await api(viaAdmin ? { action: 'get_client', slug, adminKey: S.admin } : { action: 'get_client', slug, pin });
   S.slug = slug; S.client = d.client; S.wa = d.whatsappStatus || null;
   S.pin = viaAdmin ? String(d.client.pinAcesso || '') : pin;
@@ -227,6 +370,9 @@ async function enter(slug, pin, keep, viaAdmin) {
   history.replaceState(null, '', location.pathname + '?cliente=' + encodeURIComponent(slug));
   if (modal.open) modal.close();
   shell();
+  if (forceQuiz || needsInitialQuiz(S.client)) {
+    setTimeout(() => openQuiz(true), 250);
+  }
 }
 function logout() {
   store.del('localStorage', sessKey(S.slug)); store.del('sessionStorage', sessKey(S.slug));
@@ -237,7 +383,7 @@ function logout() {
 /* ---------- Modo Mestre ---------- */
 function master() {
   if (S.admin) return masterList();
-  openModal('👑 Modo Mestre OLC', `<form class="stack" id="mk"><p class="mute small">Acesso exclusivo da equipe OLC. A chave não fica salva no aparelho: vale só até fechar a aba.</p><label>Chave mestre<input type="password" name="key" autocomplete="off" required></label><p class="err" role="alert"></p><button class="btn gold block">Entrar como mestre</button></form>`);
+  openModal('👑 Modo Mestre OLC', `<form class="stack" id="mk"><p class="mute small">Acesso exclusivo da equipe OLC. A chave vale apenas até fechar a aba.</p><label>Chave mestre<input type="password" name="key" autocomplete="off" required></label><p class="err" role="alert"></p><button class="btn primary block">Entrar como mestre</button></form>`);
   const f = $('#mk', modal); f.key.focus();
   f.onsubmit = e => {
     e.preventDefault(); const key = f.key.value.trim(); if (!key) return;
@@ -250,52 +396,58 @@ function master() {
   };
 }
 async function masterList(pre) {
-  openModal('👑 Clientes OLC', '<p class="mute">Carregando clientes…</p>');
+  openModal('👑 Clientes e Agentes OLC', '<p class="mute">Carregando clientes…</p>');
   let clients = pre;
   try { if (!clients) clients = (await api({ action: 'list_clients', adminKey: S.admin })).clients; }
-  catch (e) { openModal('👑 Clientes OLC', `<p class="err">${esc(e.message)}</p>`); return; }
-  openModal('👑 Clientes OLC', `<div class="acts"><button type="button" class="btn gold" data-new>+ Novo cliente</button><button type="button" class="btn ghost" data-leave>Sair do modo mestre</button></div>
-  <ul class="list">${list(clients).map(c => `<li class="item"><h3>${esc(c.nomeEmpresa)}</h3><p class="small mute">${esc(c.nicho)}${c.cidade ? ' · ' + esc(c.cidade) : ''}</p><div class="acts"><button type="button" class="btn primary" data-open="${esc(c.slug)}">Abrir painel</button><button type="button" class="btn" data-copy="${esc(c.slug)}">Copiar link + código</button></div></li>`).join('') || '<li class="empty">Nenhum cliente ainda.</li>'}</ul>`);
+  catch (e) { openModal('👑 Clientes e Agentes OLC', `<p class="err">${esc(e.message)}</p>`); return; }
+  openModal('👑 Clientes e Agentes OLC', `<div class="acts"><button type="button" class="btn primary" data-new>+ Criar novo cliente (abre com Quiz)</button><button type="button" class="btn ghost" data-leave>Sair do modo mestre</button></div>
+  <ul class="list">${list(clients).map(c => `<li class="item"><h3>${esc(c.nomeEmpresa)}</h3><p class="small mute">${esc(c.nicho)}${c.cidade ? ' · ' + esc(c.cidade) : ''}</p><div class="acts"><button type="button" class="btn primary" data-open="${esc(c.slug)}">Abrir painel</button><button type="button" class="btn gold" data-quiz="${esc(c.slug)}">Abrir no Mini Quiz</button><button type="button" class="btn" data-copy="${esc(c.slug)}">Copiar link + código</button></div></li>`).join('') || '<li class="empty">Nenhum cliente ainda.</li>'}</ul>`);
   modal.onclick = e => {
-    const o = e.target.closest('[data-open]'), c = e.target.closest('[data-copy]');
-    if (o) busy(o, () => enter(o.dataset.open, '', null, true));
+    const o = e.target.closest('[data-open]'), qz = e.target.closest('[data-quiz]'), c = e.target.closest('[data-copy]');
+    if (o) busy(o, () => enter(o.dataset.open, '', null, true, false));
+    if (qz) busy(qz, () => enter(qz.dataset.quiz, '', null, true, true));
     if (c) busy(c, () => copyAccess(c.dataset.copy));
     if (e.target.closest('[data-new]')) newClient();
     if (e.target.closest('[data-leave]')) { S.admin = ''; store.del('sessionStorage', ADMIN); modal.close(); if (S.client) { logout(); } toast('Modo mestre encerrado.'); }
   };
 }
-const clientLink = slug => location.origin + location.pathname + '?cliente=' + encodeURIComponent(slug);
+const clientLink = (slug, pin) => location.origin + location.pathname + '?cliente=' + encodeURIComponent(slug) + (pin ? '&codigo=' + encodeURIComponent(pin) : '');
 async function copyText(text) {
   try { await navigator.clipboard.writeText(text); return true; }
   catch (e) { return false; }
 }
 async function showAccess(slug, pin, nome) {
-  const text = `${nome}: o seu painel está pronto.\nLink: ${clientLink(slug)}\nCódigo de acesso: ${pin}`;
+  const direct = clientLink(slug, pin);
+  const text = `${nome}: o painel do seu Agente está pronto!\nAcesse direto por este link (ao abrir, responda o Mini Quiz rápido para personalizar o seu Agente):\n${direct}\n\nIdentificador: ${slug}\nCódigo de acesso: ${pin}`;
   const ok = await copyText(text);
-  openModal(ok ? 'Acesso copiado' : 'Acesso do cliente', `<p class="mute small">${ok ? 'Cole na conversa com o cliente.' : 'Selecione e copie o texto abaixo.'}</p><textarea readonly rows="5" aria-label="Link e código do cliente">${esc(text)}</textarea><div class="acts" data-back><button type="button" class="btn" data-list>Voltar aos clientes</button></div>`);
+  openModal(ok ? 'Acesso copiado ✓' : 'Acesso do cliente', `<p class="mute small">${ok ? 'Já copiado! Cole no WhatsApp do cliente. Quando ele abrir o link, o Mini Quiz de 5 passos abre automaticamente.' : 'Selecione e copie o texto abaixo.'}</p><textarea readonly rows="6" aria-label="Link e código do cliente">${esc(text)}</textarea><div class="acts" data-back><button type="button" class="btn primary" data-openquiz>Abrir painel com Mini Quiz agora</button><button type="button" class="btn" data-list>Voltar aos clientes</button></div>`);
   $('[data-back]', modal).style.marginTop = '14px';
-  modal.onclick = e => { if (e.target.closest('[data-list]')) masterList(); };
+  modal.onclick = e => {
+    if (e.target.closest('[data-list]')) masterList();
+    if (e.target.closest('[data-openquiz]')) enter(slug, '', null, true, true);
+  };
 }
 async function copyAccess(slug) {
   const d = await api({ action: 'get_client', slug, adminKey: S.admin });
   await showAccess(slug, d.client.pinAcesso, d.client.nomeEmpresa);
 }
-function randomCode() { const abc = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789', a = new Uint32Array(12); crypto.getRandomValues(a); return [...a].map(n => abc[n % abc.length]).join(''); }
+function randomCode() { const abc = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789', a = new Uint32Array(8); crypto.getRandomValues(a); return 'OLC-' + [...a].map(n => abc[n % abc.length]).join(''); }
 function newClient() {
   modal.onclick = null;
-  openModal('Novo cliente', `<form class="stack" id="nc"><label>Nome da empresa<input name="nomeEmpresa" required maxlength="80"></label><label>Nicho<input name="nicho" required placeholder="Ex.: clínica de estética" maxlength="80"></label><div class="row"><label>Cidade<input name="cidade" maxlength="60"></label><label>WhatsApp do dono<input name="telefoneDono" inputmode="tel" placeholder="55 DDD número"></label></div><div class="row"><label>Código de acesso<input name="pinAcesso" minlength="10" required autocomplete="off" autocapitalize="none" spellcheck="false" value="${randomCode()}"></label></div><label>Contexto base da OLC<textarea name="contextoAdminOLC" rows="4" placeholder="O que o atendente precisa saber sobre a empresa"></textarea></label><p class="err" role="alert"></p><button class="btn gold block">Criar cliente</button></form>`);
+  openModal('Criar conta de novo cliente', `<form class="stack" id="nc"><p class="mute small">Assim que o cliente abrir o link da conta, ele responderá o <b>Mini Quiz de 5 passos</b> para ensinar o Agente.</p><label>Nome da empresa<input name="nomeEmpresa" required maxlength="80" placeholder="Ex.: Lancha Mar Azul"></label><label>Nicho / Ramo<input name="nicho" required placeholder="Ex.: Passeio de lancha, Clínica de estética" maxlength="80"></label><div class="row"><label>Cidade<input name="cidade" maxlength="60" placeholder="Ex.: Ilhabela - SP"></label><label>WhatsApp do proprietário<input name="telefoneDono" inputmode="tel" placeholder="55 DDD número"></label></div><div class="row"><label>Código de acesso<input name="pinAcesso" minlength="6" required autocomplete="off" autocapitalize="none" spellcheck="false" value="${randomCode()}"></label></div><label>Observação interna da OLC (opcional)<textarea name="contextoAdminOLC" rows="3" placeholder="Instruções extras configuradas pela equipe OLC"></textarea></label><p class="err" role="alert"></p><button class="btn primary block">Criar conta e gerar link do Mini Quiz</button></form>`);
   const f = $('#nc', modal);
   f.onsubmit = e => {
     e.preventDefault();
     const v = Object.fromEntries(new FormData(f).entries());
     Object.keys(v).forEach(k => v[k] = v[k].trim());
     if (!v.nomeEmpresa || !v.nicho) { $('.err', f).textContent = 'Preencha o nome e o nicho.'; return; }
-    if (v.pinAcesso.length < 10 || /\s/.test(v.pinAcesso)) { $('.err', f).textContent = 'Use um código com pelo menos 10 caracteres, sem espaços.'; return; }
-    busy($('button.gold', f), async () => {
+    if (v.pinAcesso.length < 6 || /\s/.test(v.pinAcesso)) { $('.err', f).textContent = 'Use um código com pelo menos 6 caracteres, sem espaços.'; return; }
+    busy($('button.primary', f), async () => {
       const cur = (await api({ action: 'list_clients', adminKey: S.admin })).clients;
-      const slug = v.nomeEmpresa.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-      if (list(cur).some(c => c.slug === slug)) { $('.err', f).textContent = 'Já existe um cliente com esse nome. Criar de novo apagaria a ficha dele.'; return; }
-      const d = await api(Object.assign({ action: 'create_client', adminKey: S.admin }, v));
+      const slug = v.nomeEmpresa.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      if (list(cur).some(c => c.slug === slug)) { $('.err', f).textContent = 'Já existe um cliente com esse nome.'; return; }
+      const d = await api(Object.assign({ action: 'create_client', adminKey: S.admin, contextoCliente: '' }, v));
+      store.del('localStorage', quizKey(d.client.slug));
       await showAccess(d.client.slug, d.client.pinAcesso, d.client.nomeEmpresa);
     });
   };
@@ -303,10 +455,10 @@ function newClient() {
 
 /* ---------- estrutura do painel ---------- */
 function shell() {
-  const c = S.client; document.title = c.nomeEmpresa + ' · OLC';
+  const c = S.client; document.title = c.nomeEmpresa + ' · Meu Agente OLC';
   $('#app').innerHTML = `<div class="shell">
   <nav class="side" aria-label="Seções do painel">
-   <div class="logo"><img src="icon.svg" alt="" width="38" height="38"><span>OLC Digital</span></div>
+   <div class="logo"><img src="icon.svg?v=4" alt="" width="38" height="38"><span>OLC · Meu Agente</span></div>
    <div class="tabs" role="tablist">${TABS.map(t => `<button type="button" role="tab" class="tab" id="tab-${t[0]}" data-tab="${t[0]}" aria-controls="view">${icon(t[3])}<span class="long">${t[1]}</span><span class="short">${t[2]}</span></button>`).join('')}</div>
    <div class="side-foot">${S.admin ? '<button type="button" class="btn gold" data-master>👑 Clientes</button>' : '<button type="button" class="btn ghost" data-master>👑 Modo Mestre OLC</button>'}<button type="button" class="btn ghost" data-logout>${icon(I.out)}Sair</button></div>
   </nav>
@@ -315,7 +467,7 @@ function shell() {
     <button type="button" class="iconbtn mobile-only" data-master aria-label="Modo Mestre OLC">👑</button>
     <button type="button" class="iconbtn" data-reload aria-label="Atualizar dados">${icon(I.refresh)}</button>
     <button type="button" class="iconbtn mobile-only" data-logout aria-label="Sair">${icon(I.out)}</button></header>
-   <div class="hero-wrap"><section class="hero" id="hero" aria-label="Estado do atendente"></section></div>
+   <div class="hero-wrap"><section class="hero" id="hero" aria-label="Estado do seu Agente"></section></div>
    <main class="view" id="view" role="tabpanel" tabindex="-1"></main>
   </div></div>`;
   $$('[data-tab]').forEach(b => b.onclick = () => show(b.dataset.tab));
@@ -334,47 +486,42 @@ function show(tab) {
   const v = $('#view'); v.className = 'view' + (tab === 'chat' ? ' is-chat' : ''); v.setAttribute('aria-labelledby', 'tab-' + tab);
   ({ bot: viewBot, chat: viewChat, agenda: viewAgenda })[tab](v);
   window.scrollTo(0, 0);
-  const dx = Math.sign(dir) * 26;
-  stagger(tab === 'chat' ? [$('.chat', v)] : $$('.view-head,.cols .card', v), dx, dx ? 0 : 18);
+  const dx = Math.sign(dir) * 24;
+  stagger(tab === 'chat' ? [$('.chat', v)] : $$('.view-head,.cols .card', v), dx, dx ? 0 : 16);
 }
 const head = (t, p) => `<div class="view-head"><h1>${t}</h1><p>${p}</p></div>`;
 
-/* ---------- aba 1: atendente ---------- */
-function waInfo() {
-  const st = S.wa && S.wa.state;
-  if (st === 'open') return ['ok', 'Conectado', 'O atendente está ligado ao seu número.'];
-  if (st === 'connecting') return ['warn', 'Aguardando leitura', 'Falta ler o código no celular.'];
-  return ['off', 'Desconectado', 'Conecte para o atendente responder seus clientes.'];
-}
+/* ---------- aba 1: meu agente ---------- */
 function viewBot(v) {
   const c = S.client;
-  v.innerHTML = head('Meu Atendente IA', 'Ligue, conecte e ensine. O que você salvar aqui vale nas próximas respostas.') + `<div class="cols">
+  v.innerHTML = head('Meu Agente', 'Ligue, conecte seu WhatsApp e treine o seu Agente. Tudo o que você salvar aqui já vale nas próximas conversas.') + `<div class="cols">
   <div class="stack">
-   <section class="card hi"><h2>Ensinar o Robô Agora</h2>
-    <form class="stack" id="fNota"><label>Aviso do dia, regra, preço ou resposta<textarea name="texto" rows="3" maxlength="1500" placeholder="Ex.: neste sábado não temos horário pela manhã."></textarea></label><button class="btn primary block">Adicionar ao Bot</button></form>
-    <p class="tip">💡 Você também pode ensinar pelo WhatsApp. Envie <code>#treinar sua regra</code> ou <code>#aviso seu aviso</code>. Mande sempre na conversa <b>com o seu próprio número</b>: se enviar na conversa de um cliente, ele recebe a confirmação.</p></section>
-   <section class="card" id="cNotas"><header><h2>Regras e Contextos Ativos</h2><span class="badge" id="nCount"></span></header><ul class="list" id="notas"></ul></section>
+   <section class="card hi"><header><h2>Treinar Meu Agente Agora</h2><button type="button" class="btn gold" id="bOpenQuizCard">${icon(I.spark)}Mini Quiz (5 passos)</button></header>
+    <form class="stack" id="fNota"><label>Aviso do dia, regra, preço ou orientação<textarea name="texto" rows="3" maxlength="1500" placeholder="Ex.: neste sábado não temos horário pela manhã."></textarea></label><button class="btn primary block">Adicionar ao Agente</button></form>
+    <p class="tip">💡 Você também pode treinar o seu Agente pelo WhatsApp. Envie <code>#treinar sua regra</code> ou <code>#aviso seu aviso</code> na conversa <b>com o seu próprio número</b>.</p></section>
+   <section class="card" id="cNotas"><header><h2>Regras e Informações Ativas</h2><span class="badge ok" id="nCount"></span></header><ul class="list" id="notas"></ul></section>
   </div>
   <div class="stack">
    ${S.admin ? `<section class="card admin"><h2>👑 Contexto base da OLC</h2><form class="stack" id="fAdmin"><label>Visível só no modo mestre<textarea name="contextoAdminOLC" rows="7">${esc(c.contextoAdminOLC)}</textarea></label><div class="acts"><button class="btn gold">Salvar contexto base</button><button type="button" class="btn" id="bAccess">Copiar link + código</button></div></form></section>` : ''}
-   <section class="card" id="cSrv"><header><h2>Serviços &amp; Preços</h2></header><p class="mute small">Roteiros, procedimentos ou produtos que o robô pode oferecer.</p><div class="list" id="catalogo"></div><div class="acts" id="catActs"><button type="button" class="btn" id="bAddSrv">+ Adicionar serviço</button><button type="button" class="btn primary" id="bSaveSrv">Salvar catálogo</button></div></section>
-   <section class="card"><h2>Jeito de Atender</h2><form class="stack" id="fAj">
-    <label>Orientações do dono<textarea name="contextoCliente" rows="4">${esc(c.contextoCliente)}</textarea></label>
-    <label>Tom de voz<textarea name="tomDeVoz" rows="2">${esc(c.tomDeVoz)}</textarea></label>
+   <section class="card" id="cSrv"><header><h2>Serviços &amp; Preços</h2></header><p class="mute small">Roteiros, procedimentos ou opções que o seu Agente pode apresentar e agendar.</p><div class="list" id="catalogo"></div><div class="acts" id="catActs"><button type="button" class="btn" id="bAddSrv">+ Adicionar serviço</button><button type="button" class="btn primary" id="bSaveSrv">Salvar catálogo</button></div></section>
+   <section class="card"><h2>Jeito de Atender do Agente</h2><form class="stack" id="fAj">
+    <label>Orientações gerais da empresa<textarea name="contextoCliente" rows="4">${esc(c.contextoCliente)}</textarea></label>
+    <label>Tom de voz do Agente<textarea name="tomDeVoz" rows="2">${esc(c.tomDeVoz)}</textarea></label>
     <div class="row"><label>Atende das<input type="time" name="horarioInicio" value="${esc(c.horarioInicio)}"></label><label>Até<input type="time" name="horarioFim" value="${esc(c.horarioFim)}"></label></div>
-    <p class="mute small">Por enquanto o horário fica só registrado: o robô responde a qualquer hora.</p>
-    <label>WhatsApp do dono (recebe os avisos)<input name="telefoneDono" inputmode="tel" value="${esc(c.telefoneDono)}"></label>
-    <button class="btn block">Salvar jeito de atender</button></form></section>
+    <p class="mute small">Dentro desse horário, o seu Agente responde e agenda automaticamente no WhatsApp.</p>
+    <label>WhatsApp do proprietário (recebe alertas de reserva)<input name="telefoneDono" inputmode="tel" value="${esc(c.telefoneDono)}"></label>
+    <button class="btn primary block">Salvar jeito de atender</button></form></section>
   </div></div>`;
   $('#catActs').style.marginTop = '14px';
+  $('#bOpenQuizCard').onclick = () => openQuiz(false);
   drawNotes(); drawCatalog(list(c.servicosCatalogo));
 
   $('#fNota').onsubmit = e => {
-    e.preventDefault(); const f = e.target, texto = f.texto.value.trim(); if (!texto) { toast('Escreva o que o robô deve aprender.', true); return; }
+    e.preventDefault(); const f = e.target, texto = f.texto.value.trim(); if (!texto) { toast('Escreva o que o seu Agente deve aprender.', true); return; }
     busy($('button', f), async () => {
       const slug = S.slug;
-      const d = await call('add_context', { texto, autor: S.admin ? 'Equipe OLC' : S.client.nomeEmpresa, origem: S.admin ? 'Admin OLC' : 'App do Cliente' });
-      if (slug !== S.slug) return; applyClient(d.client); f.reset(); drawNotes(); const first = $('#notas>li'); if (first) { stagger([first], -30, 0); glow(first); } burst(); toast('O robô já aprendeu.');
+      const d = await call('add_context', { texto, autor: S.admin ? 'Equipe OLC' : S.client.nomeEmpresa, origem: S.admin ? 'Admin OLC' : 'Painel do Cliente' });
+      if (slug !== S.slug) return; applyClient(d.client); f.reset(); drawNotes(); const first = $('#notas>li'); if (first) { stagger([first], -24, 0); glow(first); } burst(); toast('O seu Agente já aprendeu.');
     });
   };
   $('#fAj').onsubmit = e => {
@@ -401,9 +548,9 @@ function drawNotes() {
   $('#nCount').textContent = notes.length + (notes.length === 1 ? ' ativa' : ' ativas');
   el.innerHTML = notes.map(n => {
     const o = String(n.origem || ''), olc = /admin|olc/i.test(o + ' ' + (n.autor || ''));
-    const label = olc ? 'Equipe OLC' : /whats/i.test(o) ? 'Você, pelo WhatsApp' : 'Você, pelo app';
+    const label = olc ? 'Equipe OLC' : /quiz/i.test(o) ? 'Mini Quiz Inicial' : /whats/i.test(o) ? 'Você, pelo WhatsApp' : 'Você, pelo painel';
     return `<li class="item note"><div><span class="badge ${olc ? 'warn' : 'ok'}">${label}</span> <span class="small mute">${esc(n.autor)} · ${esc(when(n.criadoEm))}</span><p>${esc(n.texto)}</p></div><button type="button" class="iconbtn" data-del="${esc(n.id)}" aria-label="Excluir esta regra">${icon(I.trash)}</button></li>`;
-  }).join('') || '<li class="empty">Nenhuma regra extra ainda. Escreva a primeira acima.</li>';
+  }).join('') || '<li class="empty">Nenhuma regra extra ainda. Responda o Mini Quiz ou escreva a primeira acima.</li>';
   el.onclick = async e => {
     const b = e.target.closest('[data-del]'); if (!b) return;
     const n = notes.find(x => x.id === b.dataset.del);
@@ -415,15 +562,15 @@ const SRV = [['nome', 'Nome'], ['preco', 'Preço'], ['duracao', 'Duração'], ['
 function drawCatalog(items, openIdx = -1) {
   const el = $('#catalogo'); if (!el) return;
   el.innerHTML = items.map((s, i) => `<details class="item" data-id="${esc(s.id)}" ${i === openIdx ? 'open' : ''}><summary>${esc(s.nome) || 'Novo serviço'}</summary><div class="body stack">${SRV.map(([k, l]) => `<label>${l}<input data-k="${k}" value="${esc(s[k])}" maxlength="300"></label>`).join('')}<button type="button" class="btn danger" data-rm>Remover serviço</button></div></details>`).join('') || '<p class="empty">Nenhum serviço cadastrado.</p>';
-  el.onclick = e => { const r = e.target.closest('[data-rm]'); if (r) { r.closest('details').remove(); toast('Removido. Toque em Salvar catálogo para valer.'); } };
+  el.onclick = e => { const r = e.target.closest('[data-rm]'); if (r) { r.closest('details').remove(); toast('Removido. Toque em Salvar catálogo para confirmar.'); } };
 }
 function readCatalog() { return $$('#catalogo details').map(d => { const o = { id: d.dataset.id }; $$('[data-k]', d).forEach(i => o[i.dataset.k] = i.value.trim()); return o; }); }
 
 function connectModal() {
   let timer = null, alive = true, tries = 0;
   const slug = S.slug;
-  openModal('Conectar meu WhatsApp', `<p class="mute small">No celular: WhatsApp → Aparelhos conectados → Conectar um aparelho.</p>
-  <form class="stack" id="fConn"><label>Usar código em vez de QR (opcional)<input name="phone" inputmode="tel" placeholder="Seu número com 55 e DDD"></label><button class="btn primary block">Gerar código de conexão</button></form><div id="qr" aria-live="polite"></div>`);
+  openModal('Conectar meu WhatsApp ao Agente', `<p class="mute small">No celular: WhatsApp → Aparelhos conectados → Conectar um aparelho.</p>
+  <form class="stack" id="fConn"><label>Usar código numérico em vez de QR Code (opcional)<input name="phone" inputmode="tel" placeholder="Seu número com 55 e DDD"></label><button class="btn primary block">Gerar código de conexão</button></form><div id="qr" aria-live="polite"></div>`);
   $('#fConn', modal).style.marginTop = '12px';
   onModalClose = () => { alive = false; clearTimeout(timer); };
   modal.onclick = null;
@@ -431,10 +578,10 @@ function connectModal() {
     if (!alive || slug !== S.slug) return;
     try { const d = await call('get_client', {}, 20000); S.wa = d.whatsappStatus || S.wa; applyClient(d.client); updateHero(); } catch (e) {}
     if (!alive) return;
-    if (S.wa && S.wa.state === 'open') { $('#qr', modal).innerHTML = '<div class="qrbox"><h2>WhatsApp conectado ✓</h2></div>'; return; }
+    if (S.wa && S.wa.state === 'open') { $('#qr', modal).innerHTML = '<div class="qrbox"><h2>WhatsApp conectado ao Agente ✓</h2></div>'; return; }
     if (++tries < 24) timer = setTimeout(poll, 5000);
   }
-  if (S.wa && S.wa.state === 'open') { $('#fConn', modal).remove(); $('#qr', modal).innerHTML = '<div class="qrbox"><h2>WhatsApp conectado ✓</h2></div>'; return; }
+  if (S.wa && S.wa.state === 'open') { $('#fConn', modal).remove(); $('#qr', modal).innerHTML = '<div class="qrbox"><h2>WhatsApp conectado ao Agente ✓</h2></div>'; return; }
   $('#fConn', modal).onsubmit = e => {
     e.preventDefault(); const f = e.target, phone = digits(f.phone.value);
     busy($('button', f), async () => {
@@ -445,8 +592,8 @@ function connectModal() {
       const q = d.qr || {}, img = typeof q.base64 === 'string' && /^data:image\/(png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(q.base64) ? q.base64 : '';
       const box = $('#qr', modal);
       if (phone && q.pairingCode) box.innerHTML = `<div class="qrbox"><div><p>No WhatsApp, escolha “Conectar com número de telefone” e digite:</p><p class="pair">${esc(q.pairingCode)}</p></div></div>`;
-      else if (img) box.innerHTML = `<div class="qrbox"><img src="${img}" alt="QR Code para conectar o WhatsApp" width="270" height="270"></div><p class="mute small">O código vence em pouco tempo. Se não ler, gere outro.</p>`;
-      else if (S.wa && S.wa.state !== 'open') box.innerHTML = '<p class="err">O código ainda não ficou pronto. Espere alguns segundos e gere de novo.</p>';
+      else if (img) box.innerHTML = `<div class="qrbox"><img src="${img}" alt="QR Code para conectar o WhatsApp" width="270" height="270"></div><p class="mute small">O código vence rápido. Se expirar, toque em Gerar novo código.</p>`;
+      else if (S.wa && S.wa.state !== 'open') box.innerHTML = '<p class="err">O código ainda não ficou pronto. Aguarde alguns segundos e tente novamente.</p>';
       $('button', f).textContent = 'Gerar novo código';
       tries = 0; timer = setTimeout(poll, 4000);
     });
@@ -462,11 +609,11 @@ function chipsFor() {
 }
 const chatOf = () => S.chats[S.slug] || (S.chats[S.slug] = []);
 function viewChat(v) {
-  v.innerHTML = head('Testar ao Vivo', 'Respostas de verdade, usando o que está salvo. Se você confirmar uma reserva aqui, ela entra na sua Agenda.') + `<section class="chat" aria-label="Conversa de teste">
-  <div class="chat-head"><span class="ava" aria-hidden="true">${esc(S.client.nomeEmpresa.slice(0, 2).toUpperCase())}</span><div class="tx"><b>${esc(S.client.nomeEmpresa)}</b><small id="chatSub"></small></div><button type="button" class="iconbtn" id="bClear" aria-label="Limpar conversa de teste">${icon(I.trash)}</button></div>
+  v.innerHTML = head('Testar Agente ao Vivo', 'Converse como se fosse um cliente. O seu Agente responde com as regras salvas e, se você fechar um horário, já grava na Agenda.') + `<section class="chat" aria-label="Conversa de teste com o Agente">
+  <div class="chat-head"><span class="ava" aria-hidden="true">${esc(S.client.nomeEmpresa.slice(0, 2).toUpperCase())}</span><div class="tx"><b>Agente · ${esc(S.client.nomeEmpresa)}</b><small id="chatSub"></small></div><button type="button" class="iconbtn" id="bClear" aria-label="Limpar conversa de teste">${icon(I.trash)}</button></div>
   <div class="msgs" id="msgs" aria-live="polite"></div>
   <div class="chips" id="chips">${chipsFor().map(t => `<button type="button">${esc(t)}</button>`).join('')}</div>
-  <form class="compose" id="fMsg"><input name="m" placeholder="Escreva como se fosse um cliente" autocomplete="off" maxlength="600" aria-label="Mensagem de teste"><button class="send" aria-label="Enviar">${icon(I.send)}</button></form></section>`;
+  <form class="compose" id="fMsg"><input name="m" placeholder="Escreva como se fosse um cliente no WhatsApp…" autocomplete="off" maxlength="600" aria-label="Mensagem de teste"><button class="send" aria-label="Enviar">${icon(I.send)}</button></form></section>`;
   drawMsgs();
   $('#chips').onclick = e => { const b = e.target.closest('button'); if (b) send(b.textContent); };
   $('#fMsg').onsubmit = e => { e.preventDefault(); const i = e.target.m, t = i.value.trim(); if (t && !S.busyChat) { i.value = ''; send(t); } };
@@ -476,11 +623,11 @@ function drawMsgs() {
   const el = $('#msgs'); if (!el) return;
   const m = chatOf();
   const typing = S.busyChat === S.slug, sub = $('#chatSub');
-  if (sub) { sub.textContent = typing ? 'digitando...' : 'Teste: reserva confirmada entra na Agenda'; sub.classList.toggle('is-typing', typing); }
+  if (sub) { sub.textContent = typing ? 'Agente digitando...' : 'Online · reserva confirmada entra direto na Agenda'; sub.classList.toggle('is-typing', typing); }
   el.innerHTML = (m.length ? m.map(x => x.role === 'sys'
-    ? `<div class="sys">${esc(x.content)}${x.booking ? '<button type="button" class="btn" data-goagenda>Ver na Agenda</button>' : ''}</div>`
+    ? `<div class="sys">${esc(x.content)}${x.booking ? '<button type="button" class="btn primary" data-goagenda>Ver na Agenda</button>' : ''}</div>`
     : x.content.split(/\n{2,}/).map(b => `<div class="bubble ${x.role === 'user' ? 'out' : 'in'}">${esc(b)}</div>`).join('')).join('')
-    : '<div class="sys">Mande uma pergunta ou toque numa sugestão abaixo.</div>') + (typing ? '<div class="typing" aria-label="Digitando"><i></i><i></i><i></i></div>' : '');
+    : '<div class="sys">Envie uma pergunta ou toque em uma sugestão abaixo para ver o seu Agente respondendo ao vivo.</div>') + (typing ? '<div class="typing" aria-label="Digitando"><i></i><i></i><i></i></div>' : '');
   const g = $('[data-goagenda]', el); if (g) g.onclick = () => show('agenda');
   el.scrollTop = el.scrollHeight;
 }
@@ -491,12 +638,11 @@ async function send(text) {
   chat.push({ role: 'user', content: text }); S.busyChat = slug; drawMsgs();
   try {
     const d = await call('test_chat', { mensagem: text, historico }, 90000);
-    // às vezes a resposta chega com "\n" escrito como texto: vira quebra de linha e no máximo 2 balões
     const raw = list(d.baloes).length ? d.baloes.join('\n\n') : String(d.reply || '');
     const parts = raw.replace(/\\r/g, '').replace(/\\n/g, '\n').split(/\n{2,}/).map(x => x.trim()).filter(Boolean);
     const reply = parts.length > 2 ? [parts[0], parts.slice(1).join('\n')].join('\n\n') : parts.join('\n\n');
     if (reply) chat.push({ role: 'assistant', content: reply });
-    if (d.novoAgendamento) chat.push({ role: 'sys', booking: true, content: `Agendamento criado na Agenda: ${d.novoAgendamento.servico}, ${d.novoAgendamento.dataHora}.` });
+    if (d.novoAgendamento) chat.push({ role: 'sys', booking: true, content: `Agendamento registrado pelo Agente na Agenda: ${d.novoAgendamento.servico}, ${d.novoAgendamento.dataHora}.` });
     if (slug === S.slug) { applyClient(d.client); if (d.novoAgendamento) burst(); }
   } catch (e) { chat.push({ role: 'sys', content: e.message }); }
   S.busyChat = false; if (slug === S.slug) drawMsgs();
@@ -505,9 +651,9 @@ async function send(text) {
 /* ---------- aba 3: agenda e conversas ---------- */
 const STATUS = { confirmado: ['ok', 'Confirmado'], concluido: ['', 'Concluído'], cancelado: ['off', 'Cancelado'] };
 function viewAgenda(v) {
-  v.innerHTML = head('Agenda &amp; Conversas', 'O que foi marcado e quem falou com o seu atendente.') + `<div class="cols">
+  v.innerHTML = head('Agenda &amp; Conversas', 'Horários marcados e conversas atendidas pelo seu Agente no WhatsApp.') + `<div class="cols">
   <section class="card" id="cAgenda"><header><h2>Agendamentos</h2><button type="button" class="btn primary" id="bNewAg">+ Marcar</button></header><div class="filterbar" id="agF" role="group" aria-label="Filtrar agendamentos"></div><ul class="list" id="ags"></ul></section>
-  <section class="card"><h2>Conversas do WhatsApp</h2><div class="list" id="convs"></div></section></div>`;
+  <section class="card"><h2>Conversas no WhatsApp</h2><div class="list" id="convs"></div></section></div>`;
   drawBookings(); drawConvs();
   $('#bNewAg').onclick = bookingModal;
 }
@@ -520,7 +666,7 @@ function drawBookings() {
     const [cls, lbl] = STATUS[a.status] || ['', a.status || 'Sem status'], wa = waLink(a.clienteTelefone);
     return `<li class="item"><div class="item-top"><h3>${esc(a.dataHora)}</h3><span class="badge dot ${cls}">${esc(lbl)}</span></div><p class="kv"><b>${esc(a.clienteNome)}</b> · ${esc(a.servico)}</p>${a.detalhes ? `<p class="small mute">${esc(a.detalhes)}</p>` : ''}
     <div class="acts">${wa ? `<a class="btn" href="${wa}" target="_blank" rel="noopener noreferrer">Chamar no WhatsApp</a>` : ''}${Object.entries(STATUS).filter(([k]) => k !== a.status).map(([k, s]) => `<button type="button" class="btn ${k === 'cancelado' ? 'danger' : 'ghost'}" data-st="${k}" data-ag="${esc(a.id)}">${k === 'confirmado' ? 'Confirmar' : k === 'concluido' ? 'Concluir' : 'Cancelar'}</button>`).join('')}</div></li>`;
-  }).join('') || '<li class="empty">Nada por aqui neste filtro.</li>';
+  }).join('') || '<li class="empty">Nenhum agendamento neste filtro.</li>';
   el.onclick = async e => {
     const b = e.target.closest('[data-st]'); if (!b) return;
     if (b.dataset.st === 'cancelado' && !await confirmBox('Cancelar agendamento?', 'Ele continua na lista como cancelado.', 'Cancelar agendamento')) return;
@@ -536,7 +682,7 @@ function bookingModal() {
     const n = Object.fromEntries(new FormData(f).entries());
     const dt = new Date(n.dataHora);
     n.dataHora = dt.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }) + ' às ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    busy($('button.primary', f), async () => { if (slug !== S.slug) return; const d = await call('update_booking', { novoAgendamento: n }); applyClient(d.client); S.agFilter = 'todos'; modal.close(); drawBookings(); const first = $('#ags>li'); if (first) { stagger([first], -30, 0); glow(first); } burst(); toast('Agendamento salvo.'); });
+    busy($('button.primary', f), async () => { if (slug !== S.slug) return; const d = await call('update_booking', { novoAgendamento: n }); applyClient(d.client); S.agFilter = 'todos'; modal.close(); drawBookings(); const first = $('#ags>li'); if (first) { stagger([first], -24, 0); glow(first); } burst(); toast('Agendamento salvo.'); });
   };
 }
 function drawConvs() {
@@ -546,13 +692,12 @@ function drawConvs() {
   const open = $$('details[open]', el).map(d => d.dataset.tel);
   el.innerHTML = list(S.client.conversas).map(c => {
     const p = isPaused(c.telefone), wa = waLink(c.telefone);
-    return `<details class="item" data-tel="${esc(c.telefone)}" ${open.includes(String(c.telefone)) ? 'open' : ''}><summary><span>${esc(c.nome || c.telefone)}</span>${p ? '<span class="badge warn">Com você</span>' : '<span class="badge ok">Com o robô</span>'}</summary><div class="body"><p class="small mute">${esc(c.telefone)} · ${esc(when(c.atualizadoEm))}</p><div class="log">${list(c.historico).map(h => `<div class="bubble ${h.role === 'assistant' ? 'out' : 'in'}">${esc(h.content)}</div>`).join('') || `<div class="bubble in">${esc(c.ultimaMensagem)}</div>`}</div><div class="acts"><button type="button" class="btn ${p ? 'primary' : ''}" data-pause="${esc(c.telefone)}">${p ? 'Devolver para a IA' : 'Pausar IA neste contato / Assumir conversa'}</button>${wa ? `<a class="btn ghost" href="${wa}" target="_blank" rel="noopener noreferrer">Abrir no WhatsApp</a>` : ''}</div></div></details>`;
+    return `<details class="item" data-tel="${esc(c.telefone)}" ${open.includes(String(c.telefone)) ? 'open' : ''}><summary><span>${esc(c.nome || c.telefone)}</span>${p ? '<span class="badge warn">Com você</span>' : '<span class="badge ok">Com o Agente</span>'}</summary><div class="body"><p class="small mute">${esc(c.telefone)} · ${esc(when(c.atualizadoEm))}</p><div class="log">${list(c.historico).map(h => `<div class="bubble ${h.role === 'assistant' ? 'out' : 'in'}">${esc(h.content)}</div>`).join('') || `<div class="bubble in">${esc(c.ultimaMensagem)}</div>`}</div><div class="acts"><button type="button" class="btn ${p ? 'primary' : ''}" data-pause="${esc(c.telefone)}">${p ? 'Devolver conversa ao Agente' : 'Pausar Agente neste contato / Assumir conversa'}</button>${wa ? `<a class="btn ghost" href="${wa}" target="_blank" rel="noopener noreferrer">Abrir no WhatsApp</a>` : ''}</div></div></details>`;
   }).join('') || '<p class="empty">Nenhuma conversa ainda. Elas aparecem quando o WhatsApp estiver conectado e alguém escrever.</p>';
   el.onclick = e => {
     const b = e.target.closest('[data-pause]'); if (!b) return;
-    // usa o número já salvo na lista de pausados, para reativar o mesmo registro
     const tel = digits(b.dataset.pause), match = paused.find(p => p.slice(-8) === tel.slice(-8));
-    busy(b, async () => { const d = await call('toggle_pause_contact', { telefone: match || tel }); applyClient(d.client); drawConvs(); toast(match ? 'A IA voltou a atender este contato.' : 'IA pausada. A conversa é sua.'); });
+    busy(b, async () => { const d = await call('toggle_pause_contact', { telefone: match || tel }); applyClient(d.client); drawConvs(); toast(match ? 'O Agente voltou a atender este contato.' : 'Agente pausado neste contato. A conversa está com você.'); });
   };
 }
 
@@ -561,12 +706,12 @@ function drawConvs() {
   const q = new URLSearchParams(location.search);
   const slug = (q.get('cliente') || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
   const linkPin = q.get('pin') || q.get('codigo') || '';
+  const wantQuiz = q.get('quiz') === '1';
   S.linkMode = !!slug;
-  // o código sai da barra de endereço assim que é lido
-  if (q.has('pin') || q.has('codigo')) history.replaceState(null, '', location.pathname + (slug ? '?cliente=' + slug : ''));
+  if (q.has('pin') || q.has('codigo') || q.has('quiz')) history.replaceState(null, '', location.pathname + (slug ? '?cliente=' + slug : ''));
   const pin = linkPin || (slug ? savedPin(slug) : '');
   if (slug && pin) {
-    try { await enter(slug, pin, linkPin ? true : null); return; }
+    try { await enter(slug, pin, linkPin ? true : null, false, wantQuiz); return; }
     catch (e) { gate(slug, e.message); return; }
   }
   gate(slug);
