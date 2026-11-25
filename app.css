@@ -334,3 +334,6 @@ details.item .body{margin-top:12px}
 }
 @media (prefers-reduced-motion:reduce){.radar *,.radar,.link u i,.seal-live i::after{animation:none!important}.radar .wave,.radar .sweep{display:none}}
 #cSrv,#cNotas,#cAgenda{scroll-margin-top:86px}
+
+.gate-top__acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+body.is-landing{background:#fff}

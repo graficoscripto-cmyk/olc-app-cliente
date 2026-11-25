@@ -253,12 +253,13 @@ function openQuiz(isFirstTime) {
       </div>`;
     }
     openModal(isFirstTime ? '✨ Vamos configurar o seu Agente' : '✨ Configurar meu Agente (Mini Quiz)', `
-      <div class="q-prog"><div class="q-bar" style="width:${pct}%"></div></div>
+      <div class="q-prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><div class="q-bar"></div></div>
       ${body}
       <div class="acts q-nav">
         ${step > 1 ? '<button type="button" class="btn ghost" id="qPrev">← Voltar</button>' : '<span></span>'}
         ${step < total ? '<button type="button" class="btn primary" id="qNext">Continuar →</button>' : '<button type="button" class="btn primary" id="qFinish">Concluir e Ativar no Agente ✓</button>'}
       </div>`, true);
+    $('.q-bar', modal).style.width = pct + '%';
 
     modal.onclick = e => {
       if (e.target.closest('[data-close]')) { modal.close(); return; }
@@ -326,12 +327,20 @@ function openQuiz(isFirstTime) {
   renderStep();
 }
 
+/* ---------- vitrine comercial ---------- */
+function showLanding() {
+  S.client = null; S.wa = null; document.title = 'OLC · Agente IA para WhatsApp';
+  document.body.classList.add('is-landing');
+  window.OLCLanding($('#app'), { login: () => { gate(); window.scrollTo(0, 0); const f = $('#login [name=slug]'); if (f) f.focus({ preventScroll: true }); }, master });
+}
+
 /* ---------- entrada (sem lista pública de empresas) ---------- */
 function gate(prefill = '', error = '') {
+  document.body.classList.remove('is-landing');
   S.client = null; S.wa = null; document.title = 'OLC · Meu Agente';
   $('#app').innerHTML = `<main class="gate">
   <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
-  <div class="gate-top"><div class="logo"><img src="icon.svg?v=4" alt="" width="38" height="38"><span>OLC · Meu Agente</span></div><button type="button" class="master-btn" data-master>👑 Modo Mestre OLC</button></div>
+  <div class="gate-top"><div class="logo"><img src="icon.svg?v=5" alt="" width="38" height="38"><span>OLC · Meu Agente</span></div><div class="gate-top__acts"><button type="button" class="gate-back" data-back>← Voltar ao site</button><button type="button" class="master-btn" data-master>👑 Modo Mestre OLC</button></div></div>
   <div class="gate-body">
    <div class="gate-copy">${radar('gate-radar')}<span class="pill-tag">Agente Comercial &amp; Atendimento 24h</span><h1>Seu Agente no WhatsApp, <em>sempre pronto para atender.</em></h1><p>Personalize no Mini Quiz inicial, conecte seu WhatsApp em segundos e acompanhe cada agendamento em tempo real.</p>
    <div class="gate-steps">
@@ -360,6 +369,7 @@ function gate(prefill = '', error = '') {
     busy($('button[type=submit]', f), async () => { try { await enter(slug, pin, f.keep.checked); } catch (x) { $('.err', f).textContent = x.message; } });
   };
   $('[data-master]').onclick = master;
+  $('[data-back]').onclick = () => { history.replaceState(null, '', location.pathname); showLanding(); window.scrollTo(0, 0); };
 }
 async function enter(slug, pin, keep, viaAdmin, forceQuiz) {
   const d = await api(viaAdmin ? { action: 'get_client', slug, adminKey: S.admin } : { action: 'get_client', slug, pin });
@@ -377,7 +387,7 @@ async function enter(slug, pin, keep, viaAdmin, forceQuiz) {
 function logout() {
   store.del('localStorage', sessKey(S.slug)); store.del('sessionStorage', sessKey(S.slug));
   delete S.chats[S.slug]; S.slug = S.pin = ''; S.admin = ''; store.del('sessionStorage', ADMIN);
-  history.replaceState(null, '', location.pathname); S.linkMode = false; gate();
+  history.replaceState(null, '', location.pathname); S.linkMode = false; showLanding(); window.scrollTo(0, 0);
 }
 
 /* ---------- Modo Mestre ---------- */
@@ -455,10 +465,11 @@ function newClient() {
 
 /* ---------- estrutura do painel ---------- */
 function shell() {
+  document.body.classList.remove('is-landing');
   const c = S.client; document.title = c.nomeEmpresa + ' · Meu Agente OLC';
   $('#app').innerHTML = `<div class="shell">
   <nav class="side" aria-label="Seções do painel">
-   <div class="logo"><img src="icon.svg?v=4" alt="" width="38" height="38"><span>OLC · Meu Agente</span></div>
+   <div class="logo"><img src="icon.svg?v=5" alt="" width="38" height="38"><span>OLC · Meu Agente</span></div>
    <div class="tabs" role="tablist">${TABS.map(t => `<button type="button" role="tab" class="tab" id="tab-${t[0]}" data-tab="${t[0]}" aria-controls="view">${icon(t[3])}<span class="long">${t[1]}</span><span class="short">${t[2]}</span></button>`).join('')}</div>
    <div class="side-foot">${S.admin ? '<button type="button" class="btn gold" data-master>👑 Clientes</button>' : '<button type="button" class="btn ghost" data-master>👑 Modo Mestre OLC</button>'}<button type="button" class="btn ghost" data-logout>${icon(I.out)}Sair</button></div>
   </nav>
@@ -714,6 +725,6 @@ function drawConvs() {
     try { await enter(slug, pin, linkPin ? true : null, false, wantQuiz); return; }
     catch (e) { gate(slug, e.message); return; }
   }
-  gate(slug);
+  if (slug) gate(slug); else showLanding();
 })();
 })();
