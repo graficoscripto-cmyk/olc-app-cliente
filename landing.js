@@ -55,10 +55,10 @@ const QR = (() => {
   return svg('0 0 128 128', s, 'v-qr__art');
 })();
 const ART = [
-  `<div class="v-mq"><div class="v-mq__segs"><i></i><i></i><i></i><i></i><i></i></div><b>O que a empresa oferece?</b><span class="v-mq__field">Passeios privativos de lancha<em></em></span><span class="v-mq__btn">Continuar →</span></div>`,
-  `<div class="v-qr"><div class="v-qr__box">${QR}<i class="v-qr__scan"></i></div><p>WhatsApp → <b>Aparelhos conectados</b></p></div>`,
-  `<div class="v-try"><p class="v-try__a">Quero saber dos passeios</p><p class="v-try__b">Temos três roteiros privativos. Quer que eu explique?</p><p class="v-try__a">Quero para sábado</p></div>`,
-  `<div class="v-agenda"><div class="v-agenda__week">${['S', 'T', 'Q', 'Q', 'S', 'S', 'D'].map((d, i) => `<span class="${i === 5 ? 'on' : ''}">${d}</span>`).join('')}</div><div class="v-agenda__row"><b>10h</b><span>6 pessoas<small>Sábado</small></span><em>Confirmado</em></div><div class="v-agenda__ghost"></div></div>`
+  `<div class="v-mq"><div class="v-mq__segs"><i></i><i></i><i></i><i></i><i></i></div><b>O que a empresa oferece?</b><span class="v-mq__field"><span class="v-mq__type">Passeios privativos de lancha</span><em></em></span><span class="v-mq__btn">Continuar →<i class="v-tap"></i></span></div>`,
+  `<div class="v-qr"><div class="v-qr__box">${QR}<i class="v-qr__scan"></i><span class="v-qr__ok">${CHECK}</span></div><span class="v-qr__frame"><i></i><i></i><i></i><i></i></span><p>WhatsApp → <b>Aparelhos conectados</b></p></div>`,
+  `<div class="v-try"><p class="v-try__a">Quero saber dos passeios</p><div class="v-try__slot"><span class="v-try__dots"><i></i><i></i><i></i></span><p class="v-try__b">Temos três roteiros privativos. Quer que eu explique?</p></div><p class="v-try__a">Quero para sábado</p></div>`,
+  `<div class="v-agenda"><div class="v-agenda__week">${['S', 'T', 'Q', 'Q', 'S', 'S', 'D'].map((d, i) => `<span class="${i === 5 ? 'on' : ''}">${d}</span>`).join('')}</div><div class="v-agenda__row"><b>10h</b><span>6 pessoas<small>Sábado</small></span><em>Confirmado</em></div><div class="v-agenda__ghost"><i></i></div></div>`
 ];
 const STEPS = [
   ['Responda o Mini Quiz', 'Cinco passos: o que você oferece, preços, horários, jeito de falar e cuidados.'],
@@ -72,6 +72,14 @@ const DOES = [
   ['Agenda automática', 'Reserva confirmada entra na Agenda.'],
   ['Treino simples', 'Mini Quiz de 5 passos ou comando #treinar no WhatsApp.'],
   ['Controle no celular', 'Pause o Agente em um contato e assuma a conversa.']
+];
+const ico = p => svg('0 0 32 32', p, 'v-bico');
+const DOES_ICO = [
+  ico('<path d="M5 6h22v15H15l-7 6v-6H5z"/><path d="M12 11.500q4-3.500 7 0c1 2-3 2.500-3 4.500M16 18.500v.200"/>'),
+  ico('<path d="M16 4a12 11.500 0 0 0-10 17.500L4.500 28l7-2A12 11.500 0 1 0 16 4z"/><path d="M17 9l-6 8h5l-1 6 6-8h-5z"/>'),
+  ico('<path d="M5 8h22v19H5zM5 14h22M11 4v7M21 4v7"/><path d="M11 20l3.500 3.500L21 17.500"/>'),
+  ico('<path d="M3 12l13-6 13 6-13 6z"/><path d="M9 15.500V23q7 5 14 0v-7.500M29 12v9"/>'),
+  ico('<path d="M9 4h14v24H9zM14 24h4"/><path d="M13.500 11v8M18.500 11v8"/>')
 ];
 const PANEL = [
   ['Meu Agente', 'Ensine, ligue ou pause o Agente e conecte o WhatsApp.', `<div class="v-ui__row"><span>Agente ligado</span><i class="v-ui__switch"></i></div><div class="v-ui__big">${AGENT}<b>Agente pronto.</b></div><div class="v-ui__btn">Mini Quiz (5 passos)</div>`],
@@ -119,12 +127,17 @@ function render(root, on) {
 
  <section class="v-does" id="vFaz" aria-labelledby="vFazT"><div class="v-wrap v-does__in">
   <div class="v-title" data-r>${eyebrow('No dia a dia')}<h2 id="vFazT">O que o seu Agente faz</h2></div>
-  <ul class="v-checks">${DOES.map(d => `<li data-r><span class="v-check">${CHECK}</span><div><h3>${d[0]}</h3><p>${d[1]}</p>${d[2] ? `<small>${d[2]}</small>` : ''}</div></li>`).join('')}</ul>
+  <ul class="v-checks">${DOES.map((d, i) => `<li data-r><span class="v-check">${DOES_ICO[i]}</span><div><h3>${d[0]}</h3><p>${d[1]}</p>${d[2] ? `<small>${d[2]}</small>` : ''}</div></li>`).join('')}</ul>
   <div class="v-take" data-r>
    <span class="v-take__tag">Exemplo: toque na chave</span>
-   <div class="v-take__who"><span class="v-take__face is-agent">${AGENT}</span><span class="v-take__face is-you">${svg('0 0 64 64', '<circle cx="32" cy="32" r="30" fill="#f8e07c"/><path d="M22 34V20a4 4 0 0 1 8 0v9-13a4 4 0 0 1 8 0v13-10a4 4 0 0 1 8 0v18c0 10-6 15-14 15-7 0-10-3-14-9l-5-8c-2-4 3-7 6-4z" fill="#0a0a09"/>')}</span></div>
-   <p id="vTakeText" aria-live="polite">O Agente está atendendo este contato.</p>
-   <button type="button" class="v-switch" role="switch" aria-checked="false" id="vTake"><i></i><span>Assumir a conversa</span></button>
+   <div class="v-pass" aria-hidden="true">
+       <div class="v-pass__node is-agent"><span class="v-pass__face"><i class="v-halo"></i><i class="v-halo v-halo--2"></i>${AGENT}<i class="v-pass__pause"></i></span><b>Agente</b><small class="off">atendendo</small><small class="on">em pausa</small></div>
+       <div class="v-pass__track">${svg('0 0 120 60', '<path class="trail" d="M4 46Q60-8 116 46"/><path class="flow" d="M4 46Q60-8 116 46"/>', 'v-arc')}<span class="v-pass__chat"><i></i><i></i><i></i></span></div>
+       <div class="v-pass__node is-you"><span class="v-pass__face"><i class="v-halo"></i><i class="v-halo v-halo--2"></i>${svg('0 0 80 80', '<circle cx="40" cy="40" r="38" fill="#f8e07c"/><path d="M14 70c3-16 13-23 26-23s23 7 26 23a38 38 0 0 1-52 0z" fill="#0a0a09"/><circle cx="40" cy="31" r="15" fill="#0a0a09"/><path d="M22 32a18 18 0 0 1 36 0" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><rect x="18" y="29" width="8" height="13" rx="4" fill="#fff"/><rect x="54" y="29" width="8" height="13" rx="4" fill="#fff"/><path d="M58 40q0 10-14 10" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="42" cy="50" r="3.500" fill="#d7fb5c"/>', 'v-you')}</span><b>Você</b><small class="off">acompanhando</small><small class="on">com a conversa</small></div>
+      </div>
+      <div class="v-phase" aria-hidden="true"><span class="off">Antes</span><i></i><span class="on">Depois</span></div>
+      <p id="vTakeText" aria-live="polite">O Agente está atendendo este contato.</p>
+   <button type="button" class="v-switch" role="switch" aria-checked="false" id="vTake"><i></i><span>Assumir a conversa</span><em class="v-finger" aria-hidden="true">${svg('0 0 48 48', '<path d="M17 24V9a4 4 0 0 1 8 0v12l11 3c3 1 5 3 4 7l-2 9c-1 3-3 4-6 4H21c-2 0-4-1-5-3L8 30c-2-4 3-7 6-4z" fill="#fff" stroke="#0a0a09" stroke-width="2.500" stroke-linejoin="round"/>')}</em></button>
   </div>
  </div></section>
 
@@ -183,6 +196,7 @@ function render(root, on) {
   q('#vTake').onclick = e => {
     const mine = e.currentTarget.getAttribute('aria-checked') !== 'true';
     e.currentTarget.setAttribute('aria-checked', mine);
+    q('.v-take').classList.add('used');
     q('.v-take').classList.toggle('mine', mine);
     q('#vTakeText').textContent = mine ? 'Agente em pausa neste contato. A conversa está com você.' : 'O Agente está atendendo este contato.';
   };
@@ -193,6 +207,10 @@ function render(root, on) {
     const io = new IntersectionObserver(list => list.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } }), { rootMargin: '0px 0px -8% 0px' });
     qa('[data-r]').forEach(el => io.observe(el));
   }
+  if ('IntersectionObserver' in window) {
+    const live = new IntersectionObserver(list => list.forEach(en => en.target.classList.toggle('live', en.isIntersecting)), { rootMargin: '60px' });
+    qa('.v-card,.v-take,.v-checks li,.v-ui,.v-faq details').forEach(el => live.observe(el));
+  } else qa('.v-card,.v-take,.v-checks li,.v-ui,.v-faq details').forEach(el => el.classList.add('live'));
   const nav = q('#vNav'), fill = q('#vFill'), line = q('#vLine'), nums = qa('.v-line__num');
   let lastY = scrollY, tick = false;
   const onScroll = () => {
