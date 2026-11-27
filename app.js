@@ -73,7 +73,7 @@ function openModal(title, html, wide) {
   if (!modal.open) modal.showModal();
 }
 modal.addEventListener('click', e => { if (e.target.closest('[data-close]')) modal.close(); });
-modal.addEventListener('close', () => { if (onModalClose) onModalClose(); onModalClose = null; modal.innerHTML = ''; modal.className = 'modal'; });
+modal.addEventListener('close', () => { if (modal.open) return; if (onModalClose) onModalClose(); onModalClose = null; modal.innerHTML = ''; modal.className = 'modal'; });
 function confirmBox(title, text, yes) {
   return new Promise(res => {
     openModal(title, `<p class="mute">${esc(text)}</p><div class="acts" data-confirm><button type="button" class="btn danger" data-yes>${esc(yes)}</button><button type="button" class="btn ghost" data-close>Voltar</button></div>`);
@@ -206,63 +206,84 @@ function openQuiz(isFirstTime) {
     restricoes: '',
     telefoneDono: c.telefoneDono || ''
   };
-  function renderStep() {
-    const pct = Math.round((step / total) * 100);
-    let body = '';
+  if (modal.open) { modal.close(); }
+
+  /* o quiz ocupa exatamente a área visível: barras do navegador e teclado */
+  const vv = window.visualViewport;
+  const keepVisible = () => {
+    const el = document.activeElement, body = $('.qz-body', modal);
+    if (!body || !el || !body.contains(el) || !el.matches('input,textarea')) return;
+    const field = el.closest('[data-field]') || el, b = body.getBoundingClientRect(), r = field.getBoundingClientRect(), e = el.getBoundingClientRect();
+    if (r.bottom > b.bottom - 6) body.scrollTop += Math.min(r.bottom - b.bottom + 6, Math.max(0, r.top - b.top - 6));
+    const e2 = el.getBoundingClientRect();
+    if (e2.bottom > b.bottom - 6) body.scrollTop += e2.bottom - b.bottom + 6;
+    else if (e2.top < b.top + 6) body.scrollTop -= b.top + 6 - e2.top;
+  };
+  const fit = () => {
+    if (!modal.classList.contains('quiz')) return;
+    const sheet = innerWidth < 700, zoomed = vv && vv.scale > 1.05;
+    const h = vv && !zoomed ? vv.height : innerHeight;
+    modal.style.height = sheet && vv && !zoomed ? Math.round(h) + 'px' : '';
+    modal.style.top = sheet && vv && !zoomed ? Math.round(vv.offsetTop) + 'px' : '';
+    modal.classList.toggle('short', h < 620);
+    modal.classList.toggle('tiny', h < 440);
+    requestAnimationFrame(keepVisible);
+  };
+  if (vv) { vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); }
+  addEventListener('resize', fit);
+  const cleanup = () => {
+    if (vv) { vv.removeEventListener('resize', fit); vv.removeEventListener('scroll', fit); }
+    removeEventListener('resize', fit);
+    modal.style.height = modal.style.top = ''; modal.onclick = modal.oninput = modal.onfocusin = null;
+    document.documentElement.classList.remove('quiz-lock');
+  };
+
+  const field = (label, control, main) => `<div class="qz-field${main ? ' qz-main' : ''}" data-field><label for="${control.match(/id="(\w+)"/)[1]}">${label}</label>${control}</div>`;
+  function stepHtml() {
     if (step === 1) {
       const chips = ['Passeios de Lancha / Barco', 'Clínica / Massoterapia / Estética', 'Consultório / Saúde', 'Turismo & Experiências', 'Serviços Locais'];
-      body = `<div class="q-step">
-        <span class="badge ok">Passo 1 de 5 · Sobre o seu negócio</span>
-        <h3>O que a ${esc(c.nomeEmpresa)} oferece aos clientes?</h3>
-        <p class="mute small">Toque em uma categoria ou descreva abaixo com suas palavras.</p>
-        <div class="q-chips">${chips.map(ch => `<button type="button" data-qchip="${esc(ch)}" class="${state.nicho.toLowerCase() === ch.toLowerCase() ? 'on' : ''}">${esc(ch)}</button>`).join('')}</div>
-        <label>Ramo de atuação<input id="qNicho" value="${esc(state.nicho)}" placeholder="Ex.: Passeio de lancha privativa, Clínica de massoterapia"></label>
-        <label>Principais serviços, passeios ou atendimentos<textarea id="qResumo" rows="3" placeholder="Ex.: Fazemos passeios privativos de lancha para até 8 pessoas, com paradas nas ilhas e praias mais bonitas.">${esc(state.resumoServicos)}</textarea></label>
-      </div>`;
-    } else if (step === 2) {
-      body = `<div class="q-step">
-        <span class="badge ok">Passo 2 de 5 · Valores e Reserva</span>
-        <h3>Como funcionam seus preços e a forma de pagamento?</h3>
-        <p class="mute small">O seu Agente usa isso para responder orçamentos e explicar como garantir a vaga.</p>
-        <label>Valores, pacotes ou condição de reserva<textarea id="qPrecos" rows="4" placeholder="Ex.: Roteiro Norte R$ 1.800 (até 8 pessoas). Para reservar pedimos sinal de 30% no Pix e o restante no dia do atendimento. Aceitamos cartão.">${esc(state.precosPagamento)}</textarea></label>
-      </div>`;
-    } else if (step === 3) {
-      body = `<div class="q-step">
-        <span class="badge ok">Passo 3 de 5 · Horários e Local</span>
-        <h3>Onde acontece o atendimento e em qual horário o Agente atende?</h3>
-        <div class="row">
-          <label>Agente atende das<input type="time" id="qIni" value="${esc(state.horarioInicio)}"></label>
-          <label>Até<input type="time" id="qFim" value="${esc(state.horarioFim)}"></label>
-        </div>
-        <label>Endereço, ponto de encontro ou regras de horário<textarea id="qLocal" rows="3" placeholder="Ex.: Saída da Marina Porto às 9h30. Recomendamos chegar 20 minutos antes. Atendemos também em domicílio.">${esc(state.localRegras)}</textarea></label>
-      </div>`;
-    } else if (step === 4) {
-      body = `<div class="q-step">
-        <span class="badge ok">Passo 4 de 5 · Personalidade</span>
-        <h3>Qual o jeito de falar ideal para o seu Agente?</h3>
-        <p class="mute small">Escolha o estilo de conversa no WhatsApp (sempre em mensagens curtas e naturais).</p>
-        <div class="q-tones">${TONES.map(([val, title, desc]) => `<button type="button" class="q-tone ${state.tomDeVoz === val ? 'on' : ''}" data-tone="${esc(val)}"><b>${esc(title)}</b><small>${esc(desc)}</small></button>`).join('')}</div>
-        <label>Ou personalize o tom de voz<input id="qTom" value="${esc(state.tomDeVoz)}"></label>
-      </div>`;
-    } else {
-      body = `<div class="q-step">
-        <span class="badge ok">Passo 5 de 5 · Regras de Ouro &amp; Alertas</span>
-        <h3>O que o seu Agente NÃO deve prometer e onde você recebe os avisos?</h3>
-        <label>Restrições ou cuidados importantes (opcional)<textarea id="qRestr" rows="3" placeholder="Ex.: Não dar desconto sem me consultar antes; não confirmar reserva para o mesmo dia sem checar disponibilidade.">${esc(state.restricoes)}</textarea></label>
-        <label>Seu WhatsApp para receber aviso a cada novo agendamento<input id="qTel" inputmode="tel" placeholder="55 + DDD + Número (ex.: 5512999999999)" value="${esc(state.telefoneDono)}"></label>
-      </div>`;
+      return [`O que a ${esc(c.nomeEmpresa)} oferece?`, 'Escreva do seu jeito. Uma ou duas frases já ajudam.',
+        field('Responda aqui', `<textarea id="qResumo" rows="4" enterkeyhint="done" placeholder="Ex.: passeios privativos de lancha para até 8 pessoas">${esc(state.resumoServicos)}</textarea>`, true) +
+        `<div class="qz-extra" data-field><label for="qNicho">Ramo (opcional)</label><div class="qz-chips">${chips.map(ch => `<button type="button" data-qchip="${esc(ch)}" class="${state.nicho.toLowerCase() === ch.toLowerCase() ? 'on' : ''}">${esc(ch)}</button>`).join('')}</div><input id="qNicho" value="${esc(state.nicho)}" placeholder="Ex.: passeio de lancha"></div>`];
     }
-    openModal(isFirstTime ? '✨ Vamos configurar o seu Agente' : '✨ Configurar meu Agente (Mini Quiz)', `
-      <div class="q-prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><div class="q-bar"></div></div>
-      ${body}
-      <div class="acts q-nav">
-        ${step > 1 ? '<button type="button" class="btn ghost" id="qPrev">← Voltar</button>' : '<span></span>'}
-        ${step < total ? '<button type="button" class="btn primary" id="qNext">Continuar →</button>' : '<button type="button" class="btn primary" id="qFinish">Concluir e Ativar no Agente ✓</button>'}
-      </div>`, true);
-    $('.q-bar', modal).style.width = pct + '%';
+    if (step === 2) return ['Quais são os preços e como se paga?', 'O Agente usa isso nos orçamentos. Pode deixar em branco.',
+      field('Responda aqui', `<textarea id="qPrecos" rows="6" enterkeyhint="done" placeholder="Ex.: roteiro Norte R$ 1.800 (até 8 pessoas). Sinal de 30% no Pix e o restante no dia.">${esc(state.precosPagamento)}</textarea>`, true)];
+    if (step === 3) return ['Quando e onde o Agente atende?', 'Ajuste o horário e conte o local.',
+      `<div class="qz-times"><div class="qz-field" data-field><label for="qIni">Atende das</label><input type="time" id="qIni" value="${esc(state.horarioInicio)}"></div><div class="qz-field" data-field><label for="qFim">Até</label><input type="time" id="qFim" value="${esc(state.horarioFim)}"></div></div>` +
+      field('Endereço, ponto de encontro ou regras', `<textarea id="qLocal" rows="4" enterkeyhint="done" placeholder="Ex.: saída da Marina às 9h30. Chegar 20 minutos antes.">${esc(state.localRegras)}</textarea>`, true)];
+    if (step === 4) return ['Como o Agente deve falar?', 'Toque em um estilo.',
+      `<div class="qz-tones" data-field>${TONES.map(([val, title, desc]) => `<button type="button" class="qz-tone ${state.tomDeVoz === val ? 'on' : ''}" aria-pressed="${state.tomDeVoz === val}" data-tone="${esc(val)}"><b>${esc(title)}</b><small>${esc(desc)}</small></button>`).join('')}</div>` +
+      field('Ou escreva do seu jeito', `<input id="qTom" enterkeyhint="done" value="${esc(state.tomDeVoz)}">`)];
+    return ['O que o Agente não pode prometer?', 'Os dois campos são opcionais.',
+      field('Cuidados e restrições', `<textarea id="qRestr" rows="3" placeholder="Ex.: não dar desconto sem me consultar.">${esc(state.restricoes)}</textarea>`, true) +
+      field('Seu WhatsApp para aviso de agendamento', `<input id="qTel" type="tel" inputmode="tel" enterkeyhint="done" placeholder="55 + DDD + número" value="${esc(state.telefoneDono)}">`)];
+  }
 
+  function renderStep(back) {
+    const [question, hint, answer] = stepHtml(), last = step === total;
+    modal.className = 'modal quiz' + (back ? ' back' : '');
+    modal.innerHTML = `<div class="qz-top">
+        <button type="button" class="qz-x" data-close aria-label="Fechar o quiz">${icon(I.x)}</button>
+        <div class="qz-segs" role="progressbar" aria-label="Passo do quiz" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="${step}">${Array.from({ length: total }, (_, k) => `<i class="${k + 1 < step ? 'done' : k + 1 === step ? 'now' : ''}"></i>`).join('')}</div>
+        <span class="qz-count">${step} de ${total}</span>
+      </div>
+      <div class="qz-body"><div class="qz-in"><h2 id="modalTitle" class="qz-q" tabindex="-1" autofocus>${question}</h2><p class="qz-hint">${hint}</p>${answer}</div></div>
+      <div class="qz-foot"><p class="qz-err" role="alert"></p><div class="qz-nav">
+        ${step > 1 ? '<button type="button" class="qz-prev" id="qPrev" aria-label="Voltar">←</button>' : ''}
+        <button type="button" class="qz-go" id="${last ? 'qFinish' : 'qNext'}">${last ? 'Concluir e ativar ✓' : 'Continuar →'}</button>
+      </div></div>`;
+    if (!modal.open) modal.showModal();
+    const title = $('.qz-q', modal); title.focus({ preventScroll: true });
+    $('.qz-body', modal).scrollTop = 0;
+    fit();
+
+    const err = $('.qz-err', modal);
+    const main = $('.qz-main', modal);
+    const mark = () => { if (main) main.classList.toggle('filled', !!$('textarea,input', main).value.trim()); };
+    mark();
+    modal.oninput = () => { mark(); err.textContent = ''; if (main) main.classList.remove('miss'); };
+    modal.onfocusin = () => setTimeout(keepVisible, 120);
     modal.onclick = e => {
-      if (e.target.closest('[data-close]')) { modal.close(); return; }
       const ch = e.target.closest('[data-qchip]');
       if (ch) {
         state.nicho = ch.dataset.qchip;
@@ -273,7 +294,7 @@ function openQuiz(isFirstTime) {
       if (tn) {
         state.tomDeVoz = tn.dataset.tone;
         const inp = $('#qTom', modal); if (inp) inp.value = state.tomDeVoz;
-        $$('[data-tone]', modal).forEach(b => b.classList.toggle('on', b === tn));
+        $$('[data-tone]', modal).forEach(b => { b.classList.toggle('on', b === tn); b.setAttribute('aria-pressed', b === tn); });
       }
     };
     function saveCurrentInputs() {
@@ -284,46 +305,54 @@ function openQuiz(isFirstTime) {
       if (step === 5) { state.restricoes = ($('#qRestr', modal)?.value || '').trim(); state.telefoneDono = ($('#qTel', modal)?.value || '').trim(); }
     }
     const prev = $('#qPrev', modal), next = $('#qNext', modal), fin = $('#qFinish', modal);
-    if (prev) prev.onclick = () => { saveCurrentInputs(); step--; renderStep(); };
+    if (prev) prev.onclick = () => { saveCurrentInputs(); step--; renderStep(true); };
     if (next) next.onclick = () => {
       saveCurrentInputs();
-      if (step === 1 && !state.resumoServicos) { toast('Conte rapidamente o que sua empresa oferece.', true); $('#qResumo', modal)?.focus(); return; }
+      if (step === 1 && !state.resumoServicos) {
+        err.textContent = 'Conte rapidinho o que a empresa oferece.';
+        main.classList.add('miss'); $('#qResumo', modal).focus(); return;
+      }
       step++; renderStep();
     };
     if (fin) fin.onclick = e => {
       saveCurrentInputs();
+      err.textContent = '';
       busy(e.currentTarget, async () => {
-        const partes = [
-          state.resumoServicos ? `Sobre a empresa e serviços: ${state.resumoServicos}` : '',
-          state.precosPagamento ? `Valores e pagamento: ${state.precosPagamento}` : '',
-          state.localRegras ? `Local, horários e regras: ${state.localRegras}` : '',
-          state.restricoes ? `Cuidados e restrições: ${state.restricoes}` : ''
-        ].filter(Boolean);
-        const contextoFinal = partes.join('\n');
-        const d1 = await call('save_bot_settings', {
-          contextoCliente: contextoFinal || c.contextoCliente,
-          tomDeVoz: state.tomDeVoz || c.tomDeVoz,
-          horarioInicio: state.horarioInicio,
-          horarioFim: state.horarioFim,
-          telefoneDono: state.telefoneDono
-        });
-        applyClient(d1.client);
-        if (partes.length) {
-          const d2 = await call('add_context', {
-            texto: `Resumo do Quiz Inicial:\n${contextoFinal}`,
-            autor: S.client.nomeEmpresa,
-            origem: 'Quiz Inicial'
+        try {
+          const partes = [
+            state.resumoServicos ? `Sobre a empresa e serviços: ${state.resumoServicos}` : '',
+            state.precosPagamento ? `Valores e pagamento: ${state.precosPagamento}` : '',
+            state.localRegras ? `Local, horários e regras: ${state.localRegras}` : '',
+            state.restricoes ? `Cuidados e restrições: ${state.restricoes}` : ''
+          ].filter(Boolean);
+          const contextoFinal = partes.join('\n');
+          const d1 = await call('save_bot_settings', {
+            contextoCliente: contextoFinal || c.contextoCliente,
+            tomDeVoz: state.tomDeVoz || c.tomDeVoz,
+            horarioInicio: state.horarioInicio,
+            horarioFim: state.horarioFim,
+            telefoneDono: state.telefoneDono
           });
-          applyClient(d2.client);
-        }
-        store.set('localStorage', quizKey(S.slug), true);
-        modal.close();
-        show(S.tab);
-        burst();
-        toast('Pronto! O seu Agente já aprendeu tudo sobre a sua empresa.');
+          applyClient(d1.client);
+          if (partes.length) {
+            const d2 = await call('add_context', {
+              texto: `Resumo do Quiz Inicial:\n${contextoFinal}`,
+              autor: S.client.nomeEmpresa,
+              origem: 'Quiz Inicial'
+            });
+            applyClient(d2.client);
+          }
+          store.set('localStorage', quizKey(S.slug), true);
+          modal.close();
+          show(S.tab);
+          burst();
+          toast('Pronto! O seu Agente já aprendeu tudo sobre a sua empresa.');
+        } catch (x) { err.textContent = x.message; }
       });
     };
   }
+  document.documentElement.classList.add('quiz-lock');
+  onModalClose = cleanup;
   renderStep();
 }
 
@@ -331,7 +360,7 @@ function openQuiz(isFirstTime) {
 function showLanding() {
   S.client = null; S.wa = null; document.title = 'OLC · Agente IA para WhatsApp';
   document.body.classList.add('is-landing');
-  window.OLCLanding($('#app'), { login: () => { gate(); window.scrollTo(0, 0); const f = $('#login [name=slug]'); if (f) f.focus({ preventScroll: true }); }, master });
+  window.OLCLanding($('#app'), { login: () => { gate(); window.scrollTo(0, 0); const f = $('#login [name=slug]'); if (f && matchMedia('(hover: hover) and (pointer: fine)').matches) f.focus({ preventScroll: true }); }, master });
 }
 
 /* ---------- entrada (sem lista pública de empresas) ---------- */
@@ -380,9 +409,9 @@ async function enter(slug, pin, keep, viaAdmin, forceQuiz) {
   history.replaceState(null, '', location.pathname + '?cliente=' + encodeURIComponent(slug));
   if (modal.open) modal.close();
   shell();
-  if (forceQuiz || needsInitialQuiz(S.client)) {
-    setTimeout(() => openQuiz(true), 250);
-  }
+  const askQuiz = forceQuiz || S.wantQuiz === slug;
+  S.wantQuiz = '';
+  if (askQuiz || needsInitialQuiz(S.client)) openQuiz(true);
 }
 function logout() {
   store.del('localStorage', sessKey(S.slug)); store.del('sessionStorage', sessKey(S.slug));
@@ -719,6 +748,7 @@ function drawConvs() {
   const linkPin = q.get('pin') || q.get('codigo') || '';
   const wantQuiz = q.get('quiz') === '1';
   S.linkMode = !!slug;
+  S.wantQuiz = wantQuiz ? slug : '';
   if (q.has('pin') || q.has('codigo') || q.has('quiz')) history.replaceState(null, '', location.pathname + (slug ? '?cliente=' + slug : ''));
   const pin = linkPin || (slug ? savedPin(slug) : '');
   if (slug && pin) {

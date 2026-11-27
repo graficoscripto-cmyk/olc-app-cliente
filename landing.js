@@ -1,182 +1,250 @@
-/* Vitrine comercial do Agente OLC (grid arquitetônico). Sem chaves; ilustrações vetoriais próprias. */
+/* Vitrine comercial do Agente OLC. Sem chaves; todas as ilustrações são vetoriais e próprias. */
 (function () {
 'use strict';
 const WA = 'https://wa.me/5512988685845?text=' + encodeURIComponent('Opa Gustavo! Quero o Agente OLC para a minha empresa.');
-const NAV = [['Protection', 'Agente 24h'], ['Solutions', 'Como Funciona'], ['Arguments', 'Diferenciais'], ['Using', 'Simulador']];
+const NAV = [['vComo', 'Como funciona'], ['vFaz', 'O que faz'], ['vFaq', 'Dúvidas']];
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* ícones de traço, grade 48x48 */
-const D = {
-  chat: 'M8 10h32v22H21l-9 8v-8H8zM16 19h16M16 25h10',
-  chat2: 'M6 8h26v18H18l-7 6v-6H6zM32 18h10v18h-5v6l-7-6H18v-5',
-  cal: 'M8 11h32v29H8zM8 19h32M16 6v9M32 6v9M17 29l5 5 10-10',
-  cal2: 'M8 11h32v29H8zM8 19h32M16 6v9M32 6v9M15 26h5v5h-5zM28 26h5v5h-5z',
-  quiz: 'M10 6h28v36H10zM16 15h3M23 15h9M16 24h3M23 24h9M16 33h3M23 33h9',
-  quiz2: 'M10 6h28v36H10zM15 15l3 3 5-6M15 26l3 3 5-6M28 16h5M28 27h5M16 36h16',
-  phone: 'M14 4h20v40H14zM21 9h6M22 38h4',
-  phone2: 'M14 4h20v40H14zM19 24l4 4 7-8M22 38h4',
-  clock: 'M24 6a18 18 0 1 0 .1 0M24 14v11l8 5',
-  clock2: 'M24 6a18 18 0 1 0 .1 0M24 24l-9-7M24 24V10',
-  pause: 'M24 6a18 18 0 1 0 .1 0M19 17v14M29 17v14',
-  send: 'M6 23L42 7 30 42l-7-14zM23 28L42 7',
-  hash: 'M18 7l-5 34M34 7l-5 34M9 18h32M7 31h32',
-  list: 'M17 13h24M17 24h24M17 35h24M7 13h3M7 24h3M7 35h3'
-};
-const ico = (k, cls = '') => `<svg class="lp-ico ${cls}" viewBox="0 0 48 48" aria-hidden="true"><path d="${D[k]}"/></svg>`;
-const arrow = (cls = '') => `<svg class="lp-arrow ${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18L18 6M8 6h10v10"/></svg>`;
-const STAR = '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M17.5 1h5v13.5l9.5-9.5 3.500 3.500-9.500 9.500H39v5H26l9.500 9.500-3.500 3.500-9.500-9.500V39h-5V26.500L8 36l-3.500-3.500L14 23H1v-5h13L4.500 8.500 8 5l9.500 9.500z"/></svg>';
-const star = cls => `<span class="lp-star ${cls || ''}" data-animate="star">${STAR}</span>`;
+const svg = (box, body, cls) => `<svg class="${cls || ''}" viewBox="${box}" aria-hidden="true">${body}</svg>`;
+const ARROW = svg('0 0 24 24', '<path d="M5 12h14M13 6l6 6-6 6"/>', 'v-ico');
+const CHECK = svg('0 0 24 24', '<path d="M5 12.5l4.5 4.5L19 7.5"/>', 'v-ico');
+const SPARK = '<path d="M20 2c2 11 7 16 18 18-11 2-16 7-18 18-2-11-7-16-18-18C13 18 18 13 20 2z"/>';
 
-/* botão cubo 3D */
-const cube = (label, attr) => `<span class="btn-cube-wrap" data-animate="cube-hover"><span class="btn-cube"><button type="button" class="btn-cube__front" ${attr}>${label}</button><i class="btn-cube__side mod--1"></i><i class="btn-cube__side mod--2"></i><i class="btn-cube__side mod--3"></i></span></span>`;
+/* marca e personagens desenhados para a OLC */
+const MARK = svg('0 0 40 40', '<rect width="40" height="40" rx="12" fill="#d7fb5c"/><path d="M18 8h4v8l6-6 3 3-6 6h7v4h-7l6 6-3 3-6-6v6h-4v-6l-6 6-3-3 6-6H8v-4h7l-6-6 3-3 6 6z" fill="#0b100e"/>', 'v-mark');
+const AGENT = svg('0 0 64 64', '<path d="M32 5C16 5 6 15 6 30c0 7 2 12 6 16l-3 13 14-6c3 1 6 1 9 1 16 0 26-10 26-24S48 5 32 5z" fill="#d7fb5c"/><path d="M21 27q3-5 7 0M36 27q3-5 7 0" fill="none" stroke="#0b100e" stroke-width="3.4" stroke-linecap="round"/><path d="M23 36q9 10 18 0z" fill="#0b100e"/><circle cx="17" cy="37" r="3" fill="#20c8bf"/><circle cx="47" cy="37" r="3" fill="#20c8bf"/>', 'v-agent');
+const CLIENT = svg('0 0 64 64', '<circle cx="32" cy="32" r="30" fill="#1d3a37"/><circle cx="42" cy="22" r="8" fill="#f8e07c"/><path d="M5 42q9-9 18 0t18 0 18 0v6C53 57 44 62 32 62S11 57 5 48z" fill="#20c8bf"/>', 'v-client');
 
-function bubbles(msgs) { return msgs.map(m => `<p class="lp-b ${m[0]}">${m[1]}</p>`).join(''); }
+const STK_CAL = svg('0 0 96 100', '<rect x="8" y="14" width="76" height="76" rx="18" fill="#fff"/><path d="M8 32a18 18 0 0 1 18-18h40a18 18 0 0 1 18 18v6H8z" fill="#20c8bf"/><path d="M28 6v18M64 6v18" stroke="#0b100e" stroke-width="6" stroke-linecap="round"/><circle cx="46" cy="64" r="18" fill="#d7fb5c"/><path d="M37 64l6 6 12-12" fill="none" stroke="#0b100e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>');
+const STK_CLOCK = svg('0 0 80 80', '<circle cx="40" cy="40" r="34" fill="#f8e07c"/><circle cx="40" cy="40" r="25" fill="#fff"/><path d="M40 24v17l12 8" fill="none" stroke="#0b100e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>');
+const STK_PLANE = svg('0 0 120 90', '<path d="M4 82q28 6 40-14t26-22" fill="none" stroke="#20c8bf" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/><path d="M60 34l56-30-18 62-16-18z" fill="#d7fb5c"/><path d="M82 48l34-44-44 38 2 22z" fill="#a9d63a"/>');
+const RINGS = cls => svg('0 0 600 600', [90, 150, 215, 285].map(r => `<circle cx="300" cy="300" r="${r}"/>`).join(''), 'v-rings ' + (cls || ''));
 
-/* composição geométrica do topo */
-const heroArt = `<div class="hero__elements-wrap" aria-hidden="true">
- <div class="he he-blob"></div>
- <svg class="he he-disc" viewBox="0 0 240 250"><defs><linearGradient id="cyG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#20c8bf"/><stop offset="1" stop-color="#f8e07c"/></linearGradient></defs><ellipse cx="128" cy="116" rx="84" ry="122" transform="rotate(-38 128 116)" fill="#fff" stroke="#131313" stroke-width="2"/><ellipse cx="112" cy="128" rx="84" ry="122" transform="rotate(-38 112 128)" fill="url(#cyG)" stroke="#131313" stroke-width="2"/></svg>
- <svg class="he he-smile" viewBox="0 0 130 140"><path d="M20 20L116 6v110" fill="#fff" stroke="#131313" stroke-width="2"/><rect x="2" y="20" width="114" height="116" fill="#fff" stroke="#131313" stroke-width="2"/><path d="M32 62V48h14M72 48h14v14M86 94v14H72M46 108H32V94M47 66v9M71 66v9M45 88q14 12 28 0" fill="none" stroke="#131313" stroke-width="3" stroke-linecap="round"/></svg>
- <svg class="he he-cone" viewBox="0 0 90 120"><path d="M6 4l18 98M6 4l76 66" stroke="#131313" stroke-width="2" fill="none"/><ellipse cx="54" cy="88" rx="38" ry="17" transform="rotate(-30 54 88)" fill="url(#cyG)" stroke="#131313" stroke-width="2"/></svg>
- <svg class="he he-wedge" viewBox="0 0 134 134"><path d="M4 4h104l22 26H28v100L4 104z" fill="#fff" stroke="#131313" stroke-width="2"/><path d="M28 30h102L28 130z" fill="url(#cyG)" stroke="#131313" stroke-width="2"/><path d="M42 46h.1M64 46h.1M86 46h.1M42 68h.1M64 68h.1M42 90h.1" stroke="#131313" stroke-width="7" stroke-linecap="round"/></svg>
- <div class="he he-card"><span class="he-dots">✳✳✳</span><div class="he-card__head"><i></i><div><b>Seu Agente</b><small>exemplo de conversa</small></div><span class="he-live">● AO VIVO</span></div>
-  <div class="he-card__log">${bubbles([['in', 'Oi! Tem horário no sábado?'], ['out', 'Tenho sim. Qual horário fica melhor?'], ['in', 'Às 10h'], ['out', 'Fechado! Já marquei na agenda.']])}</div>
-  <div class="he-card__tele">${ico('cal')}<span>Reserva registrada na Agenda</span></div></div>
-</div>`;
-
-/* grade modular: [coluna, linha, tipo, ícone, ícone no hover, texto] */
-const CELLS = [
-  [3, 1, 'white', 'chat', 'chat2', 'Conversa'], [7, 1, 'dark1', 'send'], [11, 1, 'white', 'quiz', 'quiz2', 'Mini Quiz'],
-  [1, 2, 'dark2', 'hash'], [12, 2, 'white', 'cal', 'cal2', 'Agenda'], [1, 3, 'dark2', 'list'],
-  [1, 5, 'white', 'phone', 'phone2', 'No celular'], [5, 5, 'grad', 'clock'],
-  [12, 4, 'dark3', 'pause'], [12, 5, 'dark3', 'clock2'], [11, 4, 'dark3', 'chat'], [11, 5, 'white', 'clock', 'clock2', 'Horário'],
-  [7, 5, 'go', 'g1'], [8, 5, 'go', 'g2'], [9, 5, 'go', 'g3']
+const CHAT = [
+  ['c', 'Oi! Tem horário no sábado?', '10:02'],
+  ['a', 'Tem sim! Qual horário fica melhor para você?', '10:02'],
+  ['c', 'Às 10h, somos 6 pessoas.', '10:03'],
+  ['a', 'Fechado! Já registrei na agenda ✅', '10:03']
 ];
-function grid() {
-  const used = new Set(CELLS.map(c => c[0] + '-' + c[1]));
-  let html = '';
-  for (let r = 1; r <= 5; r++) for (let c = 1; c <= 12; c++) {
-    if (r >= 2 && r <= 4 && c >= 2 && c <= 10) continue;
-    if (!used.has(c + '-' + r)) html += `<i class="solutions__block r${r} c${c} mod--empty"></i>`;
+const chat = () => `<figure class="v-scene" aria-label="Conversa ilustrativa entre um cliente e o Agente">
+  <span class="v-stk v-stk--plane">${STK_PLANE}</span><span class="v-stk v-stk--clock">${STK_CLOCK}</span>
+  <div class="v-phone">
+   <div class="v-phone__head">${AGENT}<div><b>Seu Agente</b><small id="vStatus">online</small></div><span class="v-tag">Conversa ilustrativa</span></div>
+   <div class="v-log" id="vLog">
+    ${CHAT.map(m => `<div class="v-msg v-msg--${m[0]}">${m[0] === 'c' ? CLIENT : ''}<p>${m[1]}<time>${m[2]}${m[0] === 'a' ? ' <i>✓✓</i>' : ''}</time></p></div>`).join('')}
+    <div class="v-typing" id="vTyping" aria-hidden="true"><i></i><i></i><i></i></div>
+   </div>
+   <div class="v-booked" id="vBooked"><span>${CHECK}</span><div><b>Reserva na Agenda</b><small>Sábado · 10h · 6 pessoas</small></div></div>
+  </div>
+  <span class="v-stk v-stk--cal" id="vCal">${STK_CAL}</span>
+ </figure>`;
+
+/* ilustrações do passo a passo */
+const QR = (() => {
+  let s = '';
+  for (let y = 0; y < 13; y++) for (let x = 0; x < 13; x++) {
+    if ((x < 5 && y < 5) || (x > 7 && y < 5) || (x < 5 && y > 7)) continue;
+    if ((x * 7 + y * 11 + x * y) % 3 === 0) s += `<rect x="${x * 10}" y="${y * 10}" width="8" height="8" rx="2"/>`;
   }
-  CELLS.forEach(([c, r, type, a, b, label]) => {
-    const pos = `r${r} c${c}`;
-    if (type === 'white') html += `<div class="solutions__block ${pos} mod--wite" tabindex="0" role="img" aria-label="${label}"><span class="solutions__img">${ico(a)}</span><span class="solutions__img mod--hover">${ico(b)}<small>${label}</small></span></div>`;
-    else if (type === 'go') html += `<i class="solutions__block ${pos} mod--go ${a}">${arrow()}</i>`;
-    else html += `<i class="solutions__block ${pos} mod--${type}"><span class="solutions__par">${ico(a)}</span></i>`;
-  });
-  return html;
-}
-
-const ARGS = [
-  ['a1', '01', 'Qualificação de quem chama', 'O Agente entende o que a pessoa quer, pergunta data e quantidade e conduz até a reserva.', 'chat2', 'Prospecção ativa (puxar conversa com novos contatos) não está no painel: consulte a OLC.'],
-  ['a2', '02', 'Atendimento no WhatsApp', 'Responde na hora, no horário que você definir.', 'clock'],
-  ['a3', '03', 'Agenda automática', 'Reserva confirmada entra na Agenda.', 'cal'],
-  ['a4', '04', 'Treino simples', 'Mini Quiz de 5 passos ou comando #treinar no WhatsApp.', 'hash'],
-  ['a5', '05', 'Controle no celular', 'Pause o Agente em um contato e assuma a conversa.', 'phone2']
+  [[0, 0], [90, 0], [0, 90]].forEach(([x, y]) => s += `<path d="M${x + 4} ${y}h30a4 4 0 0 1 4 4v30a4 4 0 0 1-4 4H${x + 4}a4 4 0 0 1-4-4V${y + 4}a4 4 0 0 1 4-4zm2 7v24h26V${y + 7}z" fill-rule="evenodd"/><rect x="${x + 12}" y="${y + 12}" width="14" height="14" rx="3"/>`);
+  return svg('0 0 128 128', s, 'v-qr__art');
+})();
+const ART = [
+  `<div class="v-mq"><div class="v-mq__segs"><i></i><i></i><i></i><i></i><i></i></div><b>O que a empresa oferece?</b><span class="v-mq__field">Passeios privativos de lancha<em></em></span><span class="v-mq__btn">Continuar →</span></div>`,
+  `<div class="v-qr"><div class="v-qr__box">${QR}<i class="v-qr__scan"></i></div><p>WhatsApp → <b>Aparelhos conectados</b></p></div>`,
+  `<div class="v-try"><p class="v-try__a">Quero saber dos passeios</p><p class="v-try__b">Temos três roteiros privativos. Quer que eu explique?</p><p class="v-try__a">Quero para sábado</p></div>`,
+  `<div class="v-agenda"><div class="v-agenda__week">${['S', 'T', 'Q', 'Q', 'S', 'S', 'D'].map((d, i) => `<span class="${i === 5 ? 'on' : ''}">${d}</span>`).join('')}</div><div class="v-agenda__row"><b>10h</b><span>6 pessoas<small>Sábado</small></span><em>Confirmado</em></div><div class="v-agenda__ghost"></div></div>`
 ];
-
 const STEPS = [
-  ['01.', 'Responda o Mini Quiz', 'Cinco passos: o que você oferece, preços, horários, jeito de falar e cuidados.', [['sys', 'Passo 1 de 5 · Sobre o seu negócio'], ['in', 'O que a sua empresa oferece?'], ['out', 'Passeios privativos de lancha.']]],
-  ['02.', 'Conecte o seu WhatsApp', 'Pelo QR Code ou pelo código no celular, em Aparelhos conectados.', [['sys', 'WhatsApp → Aparelhos conectados'], ['in', 'Código de conexão gerado no painel'], ['out', 'Aparelho conectado ✓']]],
-  ['03.', 'Teste como se fosse o cliente', 'Converse com o Agente no painel antes de colocar no ar.', [['out', 'Quais passeios vocês têm?'], ['in', 'Temos três roteiros privativos. Quer que eu explique?'], ['out', 'Quero para sábado.']]],
-  ['04.', 'Acompanhe a Agenda', 'Veja as reservas, as conversas e assuma quando quiser.', [['sys', 'Novo agendamento'], ['in', 'Sábado às 10h · 6 pessoas'], ['out', 'Status: Confirmado ✓']]]
+  ['Responda o Mini Quiz', 'Cinco passos: o que você oferece, preços, horários, jeito de falar e cuidados.'],
+  ['Conecte o seu WhatsApp', 'Pelo QR Code ou pelo código no celular, em Aparelhos conectados.'],
+  ['Teste como se fosse o cliente', 'Converse com o Agente no painel antes de colocar no ar.'],
+  ['Acompanhe a Agenda', 'Veja as reservas, as conversas e assuma quando quiser.']
 ];
+const DOES = [
+  ['Qualificação de quem chama', 'Entende o que a pessoa quer, pergunta data e quantidade e conduz até a reserva.', 'Prospecção ativa (puxar conversa com novos contatos) não está no painel: consulte a OLC.'],
+  ['Atendimento no WhatsApp', 'Responde na hora, no horário que você definir.'],
+  ['Agenda automática', 'Reserva confirmada entra na Agenda.'],
+  ['Treino simples', 'Mini Quiz de 5 passos ou comando #treinar no WhatsApp.'],
+  ['Controle no celular', 'Pause o Agente em um contato e assuma a conversa.']
+];
+const PANEL = [
+  ['Meu Agente', 'Ensine, ligue ou pause o Agente e conecte o WhatsApp.', `<div class="v-ui__row"><span>Agente ligado</span><i class="v-ui__switch"></i></div><div class="v-ui__big">${AGENT}<b>Agente pronto.</b></div><div class="v-ui__btn">Mini Quiz (5 passos)</div>`],
+  ['Testar ao vivo', 'Converse como se fosse um cliente, usando as regras salvas.', `<p class="v-ui__in">Qual o horário de vocês?</p><p class="v-ui__out">Posso te ajudar! Para qual dia você quer?</p><div class="v-ui__compose"><span>Escreva como um cliente…</span><i>${ARROW}</i></div>`],
+  ['Agenda', 'Horários marcados e conversas atendidas no mesmo lugar.', `<div class="v-ui__card"><b>Sábado · 10h</b><em>Confirmado</em><small>6 pessoas</small></div><div class="v-ui__card"><b>Conversa</b><em class="alt">Com o Agente</em><small>Contato de exemplo</small></div>`]
+];
+const FAQ = [
+  ['Como o Agente aprende sobre a minha empresa?', 'Pelo Mini Quiz de 5 passos. Depois você pode ensinar mais pelo painel ou com o comando #treinar no WhatsApp.'],
+  ['Como eu conecto o meu WhatsApp?', 'Pelo QR Code ou pelo código no celular, em Aparelhos conectados.'],
+  ['Posso assumir uma conversa?', 'Sim. Você pausa o Agente naquele contato e continua a conversa.'],
+  ['Em que horário ele responde?', 'No horário que você definir.'],
+  ['Ele faz prospecção ativa?', 'Puxar conversa com novos contatos não está no painel. Consulte a OLC.']
+];
+
+const eyebrow = t => `<p class="v-eyebrow">${t}</p>`;
+const btn = (label, attr, cls) => `<button type="button" class="v-btn ${cls || ''}" ${attr}>${label}</button>`;
+const waBtn = (label, cls) => `<a class="v-btn ${cls}" href="${WA}" target="_blank" rel="noopener">${label}</a>`;
 
 function render(root, on) {
-  root.innerHTML = `<div class="lp">
- <header class="header" id="lpHeader"><div class="lp-wrap header__columns">
-  <a class="header__logo" href="#Protection" data-scroll>${star('lp-star--logo')}<b>OLC · Agente IA</b></a>
-  <nav class="header__nav" id="lpNav" aria-label="Seções">${NAV.map(n => `<a href="#${n[0]}" data-scroll data-animate="link">${n[1]}</a>`).join('')}<a class="only-mobile" href="${WA}" target="_blank" rel="noopener">Falar no WhatsApp</a></nav>
-  <div class="header__right"><a class="header__wa" href="${WA}" target="_blank" rel="noopener" data-animate="link">Falar no WhatsApp</a><button type="button" class="header__signin" data-login><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm-9 10c0-5 4-8 9-8s9 3 9 8z"/></svg>Entrar no Painel</button><button type="button" class="header__burger" id="lpBurger" aria-expanded="false" aria-controls="lpNav" aria-label="Abrir menu"><i></i><i></i><i></i></button></div>
+  root.innerHTML = `<div class="v">
+ <header class="v-nav" id="vNav"><div class="v-wrap v-nav__in">
+  <a class="v-logo" href="#vTop" data-scroll>${MARK}<b>OLC<span> · Agente</span></b></a>
+  <nav aria-label="Seções">${NAV.map(n => `<a href="#${n[0]}" data-scroll>${n[1]}</a>`).join('')}</nav>
+  ${btn('Entrar', 'data-login aria-label="Entrar no Painel"', 'v-btn--nav')}
  </div></header>
 
  <main>
- <section class="section--hero" id="Protection"><div class="lp-wrap hero__columns">
-  <div class="hero__text">
-   <div class="hero__over-row"><p class="hero__over-heading"><span>● NOVO</span>Agente de prospecção, atendimento &amp; agendamento para empresas</p><svg viewBox="0 0 60 90" aria-hidden="true"><path d="M58 90V8q0-4-4-4H8" fill="none" stroke="#131313" stroke-width="2"/><path d="M0 4l12-5v10z" fill="#131313"/></svg></div>
-   <h1>Seu WhatsApp <mark class="hl">atende e agenda</mark> ${star('hero__heading-star')}</h1>
-   <div class="hero__price-wrap"><div class="hero__price"><b><em>5</em><sup>passos</sup></b><span>para ensinar o seu Agente</span></div>${cube('Testar Meu Agente', 'data-login')}</div>
+ <section class="v-hero" id="vTop">${RINGS('v-rings--hero')}<div class="v-wrap v-hero__in">
+  <div class="v-hero__head">
+   <p class="v-over"><b>Novo</b> Agente de prospecção, atendimento &amp; agendamento para empresas</p>
+   <h1>Seu WhatsApp <span>atende e agenda</span></h1>
   </div>
-  ${heroArt}
+  ${chat()}
+  <div class="v-hero__cta">${btn('Testar meu Agente ' + ARROW, 'data-login', 'v-btn--lime')}${waBtn('Falar no WhatsApp', 'v-btn--line')}<p><b>5 passos</b> para ensinar o seu Agente</p></div>
  </div></section>
 
- <section class="section--solutions" id="Solutions" aria-labelledby="solTitle"><div class="solutions__columns">
-  ${grid()}
-  <div class="solutions__center"><div><span class="sec-pill">● ATENDIMENTO 24H</span><h2 id="solTitle">Do primeiro oi <mark class="hl">à agenda</mark></h2><a class="btn2" href="${WA}" target="_blank" rel="noopener">Falar com um especialista ${arrow()}<i class="line mod--1"></i><i class="line mod--2"></i></a></div>
-   <p>Você ensina o que a empresa oferece. O Agente responde no WhatsApp com essas informações, tira dúvidas, conduz a reserva e registra na Agenda. Quando quiser, você pausa o Agente naquele contato e assume a conversa.</p></div>
+ <div class="v-tape" aria-hidden="true"><div class="v-tape__run">${[0, 1].map(() => `<div>${['Atendimento no WhatsApp', 'Agenda integrada', 'Mini Quiz de 5 passos', 'Você assume quando quiser'].map(t => `<span>${t}</span>${svg('0 0 40 40', SPARK, 'v-spark')}`).join('')}</div>`).join('')}</div></div>
+
+ <section class="v-how" id="vComo" aria-labelledby="vComoT"><div class="v-wrap">
+  <div class="v-title" data-r>${eyebrow('Como funciona')}<h2 id="vComoT">Do primeiro oi à agenda</h2><p>Você ensina o que a empresa oferece. O Agente atende com essas informações.</p></div>
+  <ol class="v-line" id="vLine"><span class="v-line__bar" aria-hidden="true"><i id="vFill"></i></span>
+   ${STEPS.map((s, i) => `<li><span class="v-line__num">${i + 1}</span><div class="v-card" data-r><div class="v-art v-art--${i + 1}" aria-hidden="true">${ART[i]}</div></div><div class="v-line__tx" data-r><h3>${s[0]}</h3><p>${s[1]}</p></div></li>`).join('')}
+  </ol>
  </div></section>
 
- <section class="section--arguments" id="Arguments" aria-labelledby="argTitle"><div class="lp-wrap">
-  <span class="sec-pill">● DIFERENCIAIS</span>
-  <h2 id="argTitle">O que o seu <mark class="hl">Agente faz</mark></h2>
-  <div class="argument__grid">
-   ${ARGS.map(a => `<article class="argument__card ${a[0]}"><span class="argument__num">${a[1]}</span>${ico(a[4])}<h3>${a[2]}</h3><p>${a[3]}</p>${a[5] ? `<small>${a[5]}</small>` : ''}</article>`).join('')}
-   <div class="argument__cube a6" data-animate="cube-hover"><button type="button" class="argument__cube-front" data-login>${arrow()}<span class="argument__cube-title">Testar o meu Agente</span></button><i class="argument__cube-side mod--1"></i><i class="argument__cube-side mod--2"></i><i class="argument__cube-side mod--3"></i></div>
+ <section class="v-does" id="vFaz" aria-labelledby="vFazT"><div class="v-wrap v-does__in">
+  <div class="v-title" data-r>${eyebrow('No dia a dia')}<h2 id="vFazT">O que o seu Agente faz</h2></div>
+  <ul class="v-checks">${DOES.map(d => `<li data-r><span class="v-check">${CHECK}</span><div><h3>${d[0]}</h3><p>${d[1]}</p>${d[2] ? `<small>${d[2]}</small>` : ''}</div></li>`).join('')}</ul>
+  <div class="v-take" data-r>
+   <span class="v-take__tag">Exemplo: toque na chave</span>
+   <div class="v-take__who"><span class="v-take__face is-agent">${AGENT}</span><span class="v-take__face is-you">${svg('0 0 64 64', '<circle cx="32" cy="32" r="30" fill="#f8e07c"/><path d="M22 34V20a4 4 0 0 1 8 0v9-13a4 4 0 0 1 8 0v13-10a4 4 0 0 1 8 0v18c0 10-6 15-14 15-7 0-10-3-14-9l-5-8c-2-4 3-7 6-4z" fill="#0b100e"/>')}</span></div>
+   <p id="vTakeText" aria-live="polite">O Agente está atendendo este contato.</p>
+   <button type="button" class="v-switch" role="switch" aria-checked="false" id="vTake"><i></i><span>Assumir a conversa</span></button>
   </div>
  </div></section>
 
- <section class="section--runline" aria-label="Como as empresas usam o Agente OLC"><div class="runline" data-animate="runline" aria-hidden="true">${[0, 1].map(() => `<div class="runline__set">${['Como as empresas usam o Agente OLC', 'Qualificação de contatos', 'Atendimento no WhatsApp', 'Agenda integrada'].map(t => `<span>${t}</span>${star()}`).join('')}</div>`).join('')}</div></section>
+ <section class="v-panel" aria-labelledby="vPanelT">${RINGS('v-rings--side')}<div class="v-wrap">
+  <div class="v-title" data-r>${eyebrow('O seu painel')}<h2 id="vPanelT">Três telas. Tudo no celular.</h2></div>
+  <div class="v-tabs" role="tablist" aria-label="Telas do painel">${PANEL.map((p, i) => `<button type="button" role="tab" id="vTab${i}" aria-controls="vPane${i}" aria-selected="${i === 0}" data-pane="${i}">${p[0]}</button>`).join('')}<i class="v-tabs__ink pos0" id="vInk" aria-hidden="true"></i></div>
+  <div class="v-panes">${PANEL.map((p, i) => `<div class="v-pane${i === 0 ? ' on' : ''}" role="tabpanel" id="vPane${i}" aria-labelledby="vTab${i}"><p>${p[1]}</p><div class="v-ui" aria-hidden="true">${p[2]}</div></div>`).join('')}</div>
+  <p class="v-panel__note">Telas ilustrativas.</p>
+ </div></section>
 
- <section class="section--slider" id="Using" aria-labelledby="useTitle"><h2 id="useTitle" class="sr">Simulador: o passo a passo do Agente</h2><div class="using">
-  <div class="using__text" data-swiper="reviews2"><div class="using__track" id="trackX">${STEPS.map((s, i) => `<article class="using__slide" aria-label="Passo ${i + 1} de ${STEPS.length}"><h3>${s[1]}</h3><p>${s[2]}</p></article>`).join('')}</div></div>
-  <div class="using__visual" data-swiper="reviews"><div class="using__stack" id="trackY">${STEPS.map(s => `<div class="using__chat"><span>exemplo ilustrativo</span>${bubbles(s[3])}</div>`).join('')}</div></div>
-  <div class="using__side"><div class="using__num" id="useNum">01.</div><div class="using__ctl"><button type="button" id="usePrev" aria-label="Passo anterior"><svg viewBox="0 0 40 24" aria-hidden="true"><path d="M39 12H2M12 2L2 12l10 10"/></svg></button><button type="button" id="useNext" aria-label="Próximo passo"><svg viewBox="0 0 40 24" aria-hidden="true"><path d="M1 12h37M28 2l10 10-10 10"/></svg></button></div></div>
+ <section class="v-faq" id="vFaq" aria-labelledby="vFaqT"><div class="v-wrap v-faq__in">
+  <div class="v-title" data-r>${eyebrow('Sem enrolação')}<h2 id="vFaqT">Dúvidas diretas</h2></div>
+  <div>${FAQ.map(f => `<details data-r><summary><span>${f[0]}</span><i>${ARROW}</i></summary><p>${f[1]}</p></details>`).join('')}</div>
+ </div></section>
+
+ <section class="v-end" aria-labelledby="vEndT">${RINGS('v-rings--end')}<div class="v-wrap" data-r>
+  <span class="v-end__art">${AGENT}</span>
+  <h2 id="vEndT">Pronto para começar?</h2>
+  <p>Fale com a OLC ou entre no seu painel.</p>
+  <div class="v-end__cta">${waBtn('Falar no WhatsApp ' + ARROW, 'v-btn--lime')}${btn('Entrar no Painel', 'data-login', 'v-btn--line')}</div>
  </div></section>
  </main>
 
- <footer class="footer">
-  <a class="footer__get-link" href="${WA}" target="_blank" rel="noopener"><span class="lp-wrap"><h2>Pronto para começar? ${arrow()}</h2></span></a>
-  <div class="lp-wrap footer__cols">
-   <div><h3>Sobre</h3><p>Agente de atendimento e agendamento no WhatsApp, entregue e acompanhado pela OLC Digital.</p></div>
-   <div><h3>Mapa</h3>${NAV.map(n => `<a href="#${n[0]}" data-scroll data-animate="link">${n[1]}</a>`).join('')}</div>
-   <div><h3>Contato</h3><a href="${WA}" target="_blank" rel="noopener" data-animate="link">WhatsApp (12) 98868-5845</a></div>
-   <div><h3>Acesso</h3><button type="button" data-login>Entrar no Painel</button><button type="button" data-master>👑 Modo Mestre OLC</button></div>
-  </div>
-  <p class="footer__copy">OLC Digital · 2026</p>
- </footer>
+ <footer class="v-foot"><div class="v-wrap">
+  <div class="v-logo">${MARK}<b>OLC · Agente</b></div>
+  <p>Agente de atendimento e agendamento no WhatsApp, entregue e acompanhado pela OLC Digital.</p>
+  <div class="v-foot__links">${NAV.map(n => `<a href="#${n[0]}" data-scroll>${n[1]}</a>`).join('')}<a href="${WA}" target="_blank" rel="noopener">WhatsApp (12) 98868-5845</a><button type="button" data-master>👑 Modo Mestre OLC</button></div>
+  <p class="v-foot__copy">OLC Digital · 2026</p>
+ </div></footer>
 </div>`;
 
-  const lp = root.querySelector('.lp'), burger = lp.querySelector('#lpBurger');
-  const setMenu = v => { lp.classList.toggle('menu-open', v); burger.setAttribute('aria-expanded', v); burger.setAttribute('aria-label', v ? 'Fechar menu' : 'Abrir menu'); };
-  burger.onclick = () => setMenu(!lp.classList.contains('menu-open'));
-  lp.addEventListener('click', e => {
+  const v = root.querySelector('.v'), q = s => v.querySelector(s), qa = s => [...v.querySelectorAll(s)];
+  v.addEventListener('click', e => {
     const s = e.target.closest('[data-scroll]');
-    if (s) { e.preventDefault(); setMenu(false); const t = lp.querySelector(s.getAttribute('href')); if (t) t.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth' }); return; }
-    if (e.target.closest('[data-login]')) { setMenu(false); on.login(); }
+    if (s) { e.preventDefault(); const t = q(s.getAttribute('href')); if (t) t.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth' }); return; }
+    if (e.target.closest('[data-login]')) on.login();
     if (e.target.closest('[data-master]')) on.master();
+    const tab = e.target.closest('[data-pane]');
+    if (tab) selectTab(+tab.dataset.pane);
   });
 
-  /* carrossel duplo sincronizado: texto na horizontal, conversas na vertical */
-  let i = 0;
-  const X = lp.querySelector('#trackX'), Y = lp.querySelector('#trackY'), num = lp.querySelector('#useNum');
-  const slides = [...X.children], chats = [...Y.children];
-  function go(n) {
-    i = (n + STEPS.length) % STEPS.length;
-    X.style.transform = `translateX(${-i * 100}%)`; Y.style.transform = `translateY(${-i * 100}%)`;
-    num.textContent = STEPS[i][0];
-    slides.forEach((el, k) => el.setAttribute('aria-hidden', k !== i));
-    chats.forEach((el, k) => el.setAttribute('aria-hidden', k !== i));
+  /* abas do painel */
+  function selectTab(n) {
+    qa('[data-pane]').forEach((b, i) => { b.setAttribute('aria-selected', i === n); b.tabIndex = i === n ? 0 : -1; });
+    qa('.v-pane').forEach((p, i) => p.classList.toggle('on', i === n));
+    q('#vInk').className = 'v-tabs__ink pos' + n;
   }
-  lp.querySelector('#usePrev').onclick = () => go(i - 1);
-  lp.querySelector('#useNext').onclick = () => go(i + 1);
-  [X.parentElement, Y.parentElement].forEach(box => {
-    let x0 = null;
-    box.addEventListener('pointerdown', e => x0 = [e.clientX, e.clientY]);
-    box.addEventListener('pointerup', e => { if (!x0) return; const dx = e.clientX - x0[0]; x0 = null; if (Math.abs(dx) > 40) go(i + (dx < 0 ? 1 : -1)); });
-    box.addEventListener('pointercancel', () => x0 = null);
+  q('.v-tabs').addEventListener('keydown', e => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    const cur = qa('[data-pane]').findIndex(b => b.getAttribute('aria-selected') === 'true');
+    const n = (cur + (e.key === 'ArrowRight' ? 1 : 2)) % 3; selectTab(n); q('#vTab' + n).focus();
   });
-  go(0);
+  selectTab(0);
 
-  /* parallax dos ícones e do topo (somente computador) */
-  if (!calm() && matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    const pars = [...lp.querySelectorAll('.solutions__par')], art = [...lp.querySelectorAll('.he')];
-    lp.addEventListener('pointermove', e => {
-      const x = e.clientX / innerWidth - .5, y = e.clientY / innerHeight - .5;
-      pars.forEach(p => p.style.transform = `translate(${x * 14}px, ${y * 14}px)`);
-      art.forEach((a, k) => a.style.translate = `${x * (k % 3 + 1) * -7}px ${y * (k % 3 + 1) * -7}px`);
+  /* demonstração: assumir a conversa */
+  q('#vTake').onclick = e => {
+    const mine = e.currentTarget.getAttribute('aria-checked') !== 'true';
+    e.currentTarget.setAttribute('aria-checked', mine);
+    q('.v-take').classList.toggle('mine', mine);
+    q('#vTakeText').textContent = mine ? 'Agente em pausa neste contato. A conversa está com você.' : 'O Agente está atendendo este contato.';
+  };
+
+  /* entrada das seções, barra do topo e linha do tempo */
+  if (!calm() && 'IntersectionObserver' in window) {
+    v.classList.add('anim');
+    const io = new IntersectionObserver(list => list.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } }), { rootMargin: '0px 0px -8% 0px' });
+    qa('[data-r]').forEach(el => io.observe(el));
+  }
+  const nav = q('#vNav'), fill = q('#vFill'), line = q('#vLine'), nums = qa('.v-line__num');
+  let lastY = scrollY, tick = false;
+  const onScroll = () => {
+    if (!v.isConnected) { removeEventListener('scroll', onScroll); return; }
+    if (tick) return; tick = true;
+    requestAnimationFrame(() => {
+      tick = false;
+      const y = scrollY;
+      if (Math.abs(y - lastY) > 6) { nav.classList.toggle('hide', y > lastY && y > 120); lastY = y; }
+      nav.classList.toggle('solid', y > 12);
+      const r = line.getBoundingClientRect(), mark = innerHeight * .62;
+      fill.style.transform = `scaleY(${Math.max(0, Math.min(1, (mark - r.top) / r.height))})`;
+      nums.forEach(n => n.classList.toggle('lit', n.getBoundingClientRect().top < mark));
     });
-  }
+  };
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  nav.addEventListener('focusin', () => nav.classList.remove('hide'));
+
+  playChat(v);
+}
+
+/* conversa do topo: digita, responde, registra a reserva e recomeça */
+function playChat(v) {
+  const scene = v.querySelector('.v-scene'), msgs = [...v.querySelectorAll('.v-msg')], typing = v.querySelector('#vTyping');
+  const booked = v.querySelector('#vBooked'), cal = v.querySelector('#vCal'), status = v.querySelector('#vStatus');
+  if (calm()) { [...msgs, booked, cal].forEach(el => el.classList.add('on')); return; }
+  scene.classList.add('play');
+  let seen = true;
+  if ('IntersectionObserver' in window) new IntersectionObserver(e => seen = e[0].isIntersecting, { threshold: .15 }).observe(scene);
+  const wait = ms => new Promise(res => {
+    let left = ms;
+    const t = setInterval(() => { if (!v.isConnected) { clearInterval(t); return; } if (seen && !document.hidden) left -= 100; if (left <= 0) { clearInterval(t); res(); } }, 100);
+  });
+  const writing = (m, yes) => {
+    typing.classList.toggle('on', yes);
+    if (!yes) return;
+    typing.classList.toggle('right', m.classList.contains('v-msg--a'));
+    typing.style.transform = `translateY(${m.offsetTop}px)`;
+    status.textContent = m.classList.contains('v-msg--a') ? 'digitando…' : 'online';
+  };
+  (async () => {
+    msgs[0].classList.add('on');
+    await wait(900);
+    let first = true;
+    for (;;) {
+      for (let i = first ? 1 : 0; i < msgs.length; i++) {
+        const agent = msgs[i].classList.contains('v-msg--a');
+        writing(msgs[i], true); await wait(agent ? 1100 : 650); writing(msgs[i], false);
+        status.textContent = 'online'; msgs[i].classList.add('on'); await wait(agent ? 900 : 600);
+      }
+      first = false;
+      booked.classList.add('on'); cal.classList.add('on');
+      await wait(5200);
+      [...msgs, booked, cal].forEach(el => el.classList.remove('on'));
+      await wait(700);
+    }
+  })();
 }
 window.OLCLanding = render;
 })();

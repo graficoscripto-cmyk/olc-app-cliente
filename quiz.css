@@ -1,0 +1,98 @@
+/* Quiz de 5 passos: pergunta + resposta + avançar, sempre dentro da área visível */
+html.quiz-lock,html.quiz-lock body{overflow:hidden;overscroll-behavior:none}
+.modal.quiz{--ink9:#0b100e;--lime:#d7fb5c;--teal:#20c8bf;position:fixed;inset:0 0 auto 0;width:100%;max-width:100%;height:100vh;height:100dvh;max-height:none;margin:0;padding:0;border:0;border-radius:0;overflow:hidden;background:var(--ink9);color:#fff;box-shadow:none;font-family:'Hanken Grotesk',system-ui,sans-serif}
+.modal.quiz[open]{display:flex;flex-direction:column;animation:qz-in .22s ease-out}
+.modal.quiz::backdrop{background:#0b100e}
+@keyframes qz-in{from{opacity:0}to{opacity:1}}
+
+.qz-top{flex:none;display:flex;align-items:center;gap:12px;padding:calc(6px + env(safe-area-inset-top)) 14px 6px 8px}
+.qz-x{flex:none;display:grid;place-items:center;width:46px;height:46px;padding:0;border:0;border-radius:14px;background:transparent;color:#aeb8b3}
+.qz-x svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2}
+.qz-segs{flex:1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.qz-segs i{height:6px;border-radius:9px;background:#27302c;overflow:hidden;position:relative}
+.qz-segs i.done{background:var(--teal)}
+.qz-segs i.now::after{content:"";position:absolute;inset:0;background:var(--lime);transform-origin:left;animation:qz-fill .45s cubic-bezier(.22,1,.36,1) both}
+@keyframes qz-fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.qz-count{flex:none;font:500 12px/1 'DM Mono',monospace;color:#aeb8b3;white-space:nowrap}
+
+.qz-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:6px 18px 14px}
+.qz-in{display:flex;flex-direction:column;gap:14px;max-width:520px;margin:0 auto;animation:qz-slide .34s cubic-bezier(.22,1,.36,1) both}
+.modal.quiz.back .qz-in{animation-name:qz-slide-back}
+@keyframes qz-slide{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes qz-slide-back{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+.modal.quiz .qz-q{margin:4px 0 0;font:700 clamp(30px,9vw,42px)/1.02 'Barlow Condensed','Hanken Grotesk',sans-serif;letter-spacing:.002em;color:#fff;outline:none;overflow-wrap:anywhere;-webkit-text-stroke:0}
+.qz-hint{margin:-6px 0 0;font-size:15px;line-height:1.4;color:#aeb8b3}
+
+.qz-field,.qz-extra{display:grid;gap:7px;min-width:0}
+.modal.quiz label{display:block;margin:0;font:500 12px/1.3 'DM Mono',monospace;letter-spacing:.05em;text-transform:uppercase;color:#aeb8b3}
+.modal.quiz input,.modal.quiz textarea{width:100%;min-width:0;min-height:52px;padding:13px 14px;border:1.5px solid #34403a;border-radius:16px;background:#151c19;color:#fff;font:500 17px/1.4 'Hanken Grotesk',sans-serif;box-shadow:none;color-scheme:dark}
+.modal.quiz textarea{resize:none;display:block}
+.modal.quiz input::placeholder,.modal.quiz textarea::placeholder{color:#7d8984}
+.modal.quiz input:focus,.modal.quiz textarea:focus{outline:none;border-color:var(--lime);box-shadow:0 0 0 3px rgba(215,251,92,.22)}
+
+/* o campo principal chama o olhar */
+.qz-main{position:relative}
+.qz-main label{display:flex;align-items:center;gap:8px;color:var(--lime)}
+.qz-main label::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--lime);animation:qz-dot 1.4s ease-in-out infinite}
+@keyframes qz-dot{50%{transform:scale(1.7);opacity:.45}}
+.modal.quiz .qz-main input,.modal.quiz .qz-main textarea{border:2px solid var(--lime)}
+.qz-main.filled label::before{content:"✓";width:auto;height:auto;background:none;animation:none;font-size:14px}
+.modal.quiz .qz-main.miss textarea{border-color:#ff8f7a;box-shadow:0 0 0 3px rgba(255,143,122,.25)}
+.qz-main.miss{animation:qz-shake .35s ease}
+@keyframes qz-shake{25%{transform:translateX(-7px)}60%{transform:translateX(6px)}}
+
+.qz-chips{display:flex;gap:8px;overflow-x:auto;padding:2px 18px 4px;margin:0 -18px;scrollbar-width:none;overscroll-behavior-x:contain}
+.qz-chips::-webkit-scrollbar{display:none}
+.modal.quiz .qz-chips button{flex:none;min-height:44px;padding:0 15px;border:1.5px solid #34403a;border-radius:99px;background:transparent;color:#e7ece9;font:700 14px 'Hanken Grotesk',sans-serif;white-space:nowrap}
+.modal.quiz .qz-chips button.on{background:var(--lime);border-color:var(--lime);color:#0b100e}
+
+.qz-times{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+
+.qz-tones{display:grid;gap:8px}
+.modal.quiz .qz-tone{display:grid;grid-template-columns:minmax(0,1fr) 26px;column-gap:10px;align-items:center;width:100%;min-height:58px;padding:10px 14px;border:1.5px solid #34403a;border-radius:16px;background:#151c19;color:#fff;text-align:left;box-shadow:none}
+.qz-tone b{grid-column:1;font:800 15.5px/1.25 'Hanken Grotesk',sans-serif}
+.qz-tone small{grid-column:1;font-size:13px;line-height:1.3;color:#aeb8b3}
+.qz-tone::after{content:"";grid-column:2;grid-row:1/span 2;width:24px;height:24px;border:2px solid #4a5751;border-radius:50%}
+.modal.quiz .qz-tone.on{border-color:var(--lime);background:#1e2a17}
+.qz-tone.on::after{content:"✓";display:grid;place-items:center;border-color:var(--lime);background:var(--lime);color:#0b100e;font:900 14px/1 sans-serif}
+
+.qz-foot{flex:none;padding:8px 14px calc(10px + env(safe-area-inset-bottom));border-top:1px solid #222b27;background:var(--ink9)}
+.qz-err{max-width:520px;margin:0 auto 7px;font-size:14px;font-weight:700;line-height:1.3;color:#ffab9b}
+.qz-err:empty{display:none}
+.qz-nav{display:flex;gap:10px;max-width:520px;margin:0 auto}
+.modal.quiz .qz-prev,.modal.quiz .qz-go{min-height:56px;border:0;border-radius:18px;font:800 17px 'Hanken Grotesk',sans-serif;box-shadow:none}
+.modal.quiz .qz-prev{flex:none;width:58px;border:1.5px solid #34403a;background:transparent;color:#fff;font-size:20px}
+.modal.quiz .qz-go{flex:1;background:var(--lime);color:#0b100e}
+.modal.quiz .qz-go:active{transform:scale(.98)}
+.modal.quiz .qz-go[aria-busy="true"]{opacity:.65}
+.modal.quiz :focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.modal.quiz .qz-q:focus-visible{outline:none}
+
+/* pouca altura: teclado aberto ou tela pequena */
+.modal.quiz.short .qz-top{padding-top:2px;padding-bottom:0}
+.modal.quiz.short .qz-body{padding-top:2px;padding-bottom:8px}
+.modal.quiz.short .qz-in{gap:10px}
+.modal.quiz.short .qz-q{margin-top:0;font-size:27px}
+.modal.quiz.short .qz-hint{display:none}
+.modal.quiz.short textarea{height:104px;min-height:0}
+.modal.quiz.short .qz-tones{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.modal.quiz.short .qz-tone{grid-template-columns:minmax(0,1fr);min-height:56px;padding:8px 10px}
+.modal.quiz.short .qz-tone small,.modal.quiz.short .qz-tone::after{display:none}
+.modal.quiz.short .qz-tone b{font-size:14px}
+.modal.quiz.short .qz-foot{padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
+.modal.quiz.short .qz-prev,.modal.quiz.short .qz-go{min-height:48px;border-radius:14px}
+.modal.quiz.tiny .qz-top{padding-block:0}
+.modal.quiz.tiny .qz-x{height:44px}
+.modal.quiz.tiny .qz-q{font-size:22px}
+.modal.quiz.tiny textarea{height:78px}
+.modal.quiz.tiny input{min-height:46px;padding-block:9px}
+.modal.quiz.tiny .qz-in{gap:7px}
+.modal.quiz.tiny .qz-field{gap:5px}
+.modal.quiz.tiny .qz-err{margin-bottom:4px;font-size:13px}
+
+@media (min-width:700px){
+ .modal.quiz{inset:0;margin:auto;width:560px;height:min(700px,92vh);height:min(700px,92dvh);border-radius:28px}
+ .modal.quiz::backdrop{background:rgba(5,9,7,.72)}
+ .qz-body{padding-inline:28px}.qz-chips{flex-wrap:wrap;margin:0;padding:2px 0}
+}
+@media (prefers-reduced-motion:reduce){.modal.quiz *,.modal.quiz *::before,.modal.quiz *::after{animation:none!important}}
