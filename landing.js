@@ -11,14 +11,19 @@ const CHECK = svg('0 0 24 24', '<path d="M5 12.5l4.5 4.5L19 7.5"/>', 'v-ico');
 const SPARK = '<path d="M20 2c2 11 7 16 18 18-11 2-16 7-18 18-2-11-7-16-18-18C13 18 18 13 20 2z"/>';
 
 /* marca e personagens desenhados para a OLC */
-const MARK = svg('0 0 40 40', '<rect width="40" height="40" rx="12" fill="#d7fb5c"/><path d="M18 8h4v8l6-6 3 3-6 6h7v4h-7l6 6-3 3-6-6v6h-4v-6l-6 6-3-3 6-6H8v-4h7l-6-6 3-3 6 6z" fill="#0b100e"/>', 'v-mark');
-const AGENT = svg('0 0 64 64', '<path d="M32 5C16 5 6 15 6 30c0 7 2 12 6 16l-3 13 14-6c3 1 6 1 9 1 16 0 26-10 26-24S48 5 32 5z" fill="#d7fb5c"/><path d="M21 27q3-5 7 0M36 27q3-5 7 0" fill="none" stroke="#0b100e" stroke-width="3.4" stroke-linecap="round"/><path d="M23 36q9 10 18 0z" fill="#0b100e"/><circle cx="17" cy="37" r="3" fill="#20c8bf"/><circle cx="47" cy="37" r="3" fill="#20c8bf"/>', 'v-agent');
+const MARK = svg('0 0 40 40', '<rect width="40" height="40" rx="12" fill="#d7fb5c"/><path d="M18 8h4v8l6-6 3 3-6 6h7v4h-7l6 6-3 3-6-6v6h-4v-6l-6 6-3-3 6-6H8v-4h7l-6-6 3-3 6 6z" fill="#0a0a09"/>', 'v-mark');
+const AGENT = svg('0 0 64 64', '<path d="M32 5C16 5 6 15 6 30c0 7 2 12 6 16l-3 13 14-6c3 1 6 1 9 1 16 0 26-10 26-24S48 5 32 5z" fill="#d7fb5c"/><path d="M21 27q3-5 7 0M36 27q3-5 7 0" fill="none" stroke="#0a0a09" stroke-width="3.4" stroke-linecap="round"/><path d="M23 36q9 10 18 0z" fill="#0a0a09"/><circle cx="17" cy="37" r="3" fill="#20c8bf"/><circle cx="47" cy="37" r="3" fill="#20c8bf"/>', 'v-agent');
 const CLIENT = svg('0 0 64 64', '<circle cx="32" cy="32" r="30" fill="#1d3a37"/><circle cx="42" cy="22" r="8" fill="#f8e07c"/><path d="M5 42q9-9 18 0t18 0 18 0v6C53 57 44 62 32 62S11 57 5 48z" fill="#20c8bf"/>', 'v-client');
 
-const STK_CAL = svg('0 0 96 100', '<rect x="8" y="14" width="76" height="76" rx="18" fill="#fff"/><path d="M8 32a18 18 0 0 1 18-18h40a18 18 0 0 1 18 18v6H8z" fill="#20c8bf"/><path d="M28 6v18M64 6v18" stroke="#0b100e" stroke-width="6" stroke-linecap="round"/><circle cx="46" cy="64" r="18" fill="#d7fb5c"/><path d="M37 64l6 6 12-12" fill="none" stroke="#0b100e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>');
-const STK_CLOCK = svg('0 0 80 80', '<circle cx="40" cy="40" r="34" fill="#f8e07c"/><circle cx="40" cy="40" r="25" fill="#fff"/><path d="M40 24v17l12 8" fill="none" stroke="#0b100e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>');
+const STK_CAL = svg('0 0 96 100', '<rect x="8" y="14" width="76" height="76" rx="18" fill="#fff"/><path d="M8 32a18 18 0 0 1 18-18h40a18 18 0 0 1 18 18v6H8z" fill="#20c8bf"/><path d="M28 6v18M64 6v18" stroke="#0a0a09" stroke-width="6" stroke-linecap="round"/><circle cx="46" cy="64" r="18" fill="#d7fb5c"/><path d="M37 64l6 6 12-12" fill="none" stroke="#0a0a09" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>');
+const STK_CLOCK = svg('0 0 80 80', '<circle cx="40" cy="40" r="34" fill="#f8e07c"/><circle cx="40" cy="40" r="25" fill="#fff"/><path d="M40 24v17l12 8" fill="none" stroke="#0a0a09" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>');
 const STK_PLANE = svg('0 0 120 90', '<path d="M4 82q28 6 40-14t26-22" fill="none" stroke="#20c8bf" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/><path d="M60 34l56-30-18 62-16-18z" fill="#d7fb5c"/><path d="M82 48l34-44-44 38 2 22z" fill="#a9d63a"/>');
-const RINGS = cls => svg('0 0 600 600', [90, 150, 215, 285].map(r => `<circle cx="300" cy="300" r="${r}"/>`).join(''), 'v-rings ' + (cls || ''));
+const ring = (r, c) => `<circle class="${c}" cx="300" cy="300" r="${r}"/>`;
+const RINGS = cls => svg('0 0 600 600', [90, 150, 215, 285].map((r, i) => ring(r, 'rg rg' + i)).join('') +
+  [0, 1, 2].map(i => ring(285, 'wave wave' + i)).join('') +
+  '<g class="spin spin--a">' + ring(182, 'dash') + '<circle class="sat" cx="482" cy="300" r="6"/></g>' +
+  '<g class="spin spin--b">' + ring(250, 'arc') + '<circle class="sat sat--b" cx="300" cy="50" r="4.5"/></g>' +
+  '<g class="spin spin--c"><path class="sweep" d="M300 300L585 300A285 285 0 0 0 546.8 157.5Z"/></g>' + ring(9, 'bull'), 'v-rings ' + (cls || ''));
 
 const CHAT = [
   ['c', 'Oi! Tem horário no sábado?', '10:02'],
@@ -94,10 +99,10 @@ function render(root, on) {
  </div></header>
 
  <main>
- <section class="v-hero" id="vTop">${RINGS('v-rings--hero')}<div class="v-wrap v-hero__in">
+ <section class="v-hero" id="vTop"><div class="v-grid" aria-hidden="true">${[1, 2, 3, 4, 5, 6, 7].map(i => `<i class="v-plus v-plus${i}"></i>`).join('')}<i class="v-beam"></i></div>${RINGS('v-rings--hero')}<div class="v-wrap v-hero__in">
   <div class="v-hero__head">
-   <p class="v-over"><b>Novo</b> Agente de prospecção, atendimento &amp; agendamento para empresas</p>
-   <h1>Seu WhatsApp <span>atende e agenda</span></h1>
+   <p class="v-over"><b>Novo</b> Agente de atendimento, agendamento e tira-dúvidas para empresas</p>
+   <h1 aria-label="Seu WhatsApp atende e agenda"><em aria-hidden="true"><i class="v-w v-w0"><i>Seu</i></i> <i class="v-w v-w1"><i>WhatsApp</i></i></em> <span aria-hidden="true"><i class="v-w v-w2"><i>atende</i></i> <i class="v-w v-w3"><i>e</i></i> <i class="v-w v-w4"><i>agenda</i></i><b class="v-swash"></b></span></h1>
   </div>
   ${chat()}
   <div class="v-hero__cta">${btn('Testar meu Agente ' + ARROW, 'data-login', 'v-btn--lime')}${waBtn('Falar no WhatsApp', 'v-btn--line')}<p><b>5 passos</b> para ensinar o seu Agente</p></div>
@@ -117,7 +122,7 @@ function render(root, on) {
   <ul class="v-checks">${DOES.map(d => `<li data-r><span class="v-check">${CHECK}</span><div><h3>${d[0]}</h3><p>${d[1]}</p>${d[2] ? `<small>${d[2]}</small>` : ''}</div></li>`).join('')}</ul>
   <div class="v-take" data-r>
    <span class="v-take__tag">Exemplo: toque na chave</span>
-   <div class="v-take__who"><span class="v-take__face is-agent">${AGENT}</span><span class="v-take__face is-you">${svg('0 0 64 64', '<circle cx="32" cy="32" r="30" fill="#f8e07c"/><path d="M22 34V20a4 4 0 0 1 8 0v9-13a4 4 0 0 1 8 0v13-10a4 4 0 0 1 8 0v18c0 10-6 15-14 15-7 0-10-3-14-9l-5-8c-2-4 3-7 6-4z" fill="#0b100e"/>')}</span></div>
+   <div class="v-take__who"><span class="v-take__face is-agent">${AGENT}</span><span class="v-take__face is-you">${svg('0 0 64 64', '<circle cx="32" cy="32" r="30" fill="#f8e07c"/><path d="M22 34V20a4 4 0 0 1 8 0v9-13a4 4 0 0 1 8 0v13-10a4 4 0 0 1 8 0v18c0 10-6 15-14 15-7 0-10-3-14-9l-5-8c-2-4 3-7 6-4z" fill="#0a0a09"/>')}</span></div>
    <p id="vTakeText" aria-live="polite">O Agente está atendendo este contato.</p>
    <button type="button" class="v-switch" role="switch" aria-checked="false" id="vTake"><i></i><span>Assumir a conversa</span></button>
   </div>
