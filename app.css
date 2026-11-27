@@ -303,3 +303,9 @@ details.item>.body{padding:0 13px 13px}
  .shell.has-bar .chat{height:max(360px,calc(100dvh - 262px))}
  .shell:not(.has-bar) .chat{height:max(400px,calc(100dvh - 180px))}
 }
+@media (max-width:899px){
+ .shell:has(.view.is-chat) .demobar,.shell:has(.view.is-chat) .testbar{display:none}
+ .view.is-chat{padding-top:12px}
+ .view.is-chat .view-head{margin-bottom:9px}.view.is-chat .view-head h1{font-size:28px;white-space:nowrap}.view.is-chat .view-head p{display:none}
+ .shell .chat,.shell:not(.has-bar) .chat{height:max(340px,calc(100dvh - 142px - var(--tabh)))}
+}
