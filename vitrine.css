@@ -462,3 +462,55 @@ body.is-landing{background:#0a0a09}
  .v-take{position:sticky;top:84px}
 }
 @media (prefers-reduced-motion:reduce){.v-finger,.v-try__dots,.v-qr__ok,.v-tap,.v-checks li::after,.v-agenda__ghost i{display:none}}
+
+/* ===== rodada 27/11 · composicao propria para celular ===== */
+.v-call{display:none}
+@media (max-width:899px){
+ /* topo: conversa e texto contracenando */
+ .v-scene{margin:30px auto 34px!important;perspective:1100px}
+ .v-phone{animation:v-stage 8s ease-in-out infinite}
+ @keyframes v-stage{0%,100%{transform:rotateY(-4deg) rotateX(1.5deg)}50%{transform:rotateY(4deg) rotateX(0) translateY(-5px)}}
+ .v-call{position:absolute;z-index:4;display:block;max-width:76%;padding:10px 14px;border-radius:16px;font:700 19px/1.08 var(--cond);text-transform:uppercase;letter-spacing:.01em;color:var(--ink);box-shadow:0 16px 28px -12px rgba(0,0,0,.85);transition:opacity .3s,transform .6s cubic-bezier(.3,1.6,.5,1)}
+ .v-call b{display:block;font-weight:700}
+ .v-call--a{left:-6px;top:-34px;background:#fff;border-bottom-left-radius:4px;rotate:-3deg}
+ .v-call--b{right:-4px;bottom:-40px;background:var(--lime);border-top-right-radius:4px;rotate:2.5deg;text-align:right}
+ .v-scene.play .v-call:not(.on){opacity:0}
+ .v-scene.play .v-call--a:not(.on){transform:translateX(-46px) scale(.8)}
+ .v-scene.play .v-call--b:not(.on){transform:translateX(46px) scale(.8)}
+ .v-stk--clock{bottom:-34px}
+ .v-stk--cal{right:auto;left:30px;bottom:-34px;width:54px}
+ .v-stk--clock{display:none}
+ .v-stk--plane{top:-38px;right:-6px}
+
+ /* passos: ilustracao e texto em camadas, alternando os lados */
+ .v-how{overflow:hidden}
+ .v-line{gap:58px}
+ .v-line__bar{left:50%;margin-left:-1.5px;top:30px;bottom:30px}
+ .v-line li{padding-left:0}
+ .v-line li .v-card{margin-right:26px;box-shadow:0 26px 40px -24px rgba(10,10,9,.7)}
+ .v-line li:nth-of-type(even) .v-card{margin:0 0 0 26px}
+ .v-line__tx{position:relative;z-index:2;margin:-30px 0 0 30px;padding:20px 18px 18px;border:1.5px solid var(--ink);border-radius:22px;background:#fff;box-shadow:7px 7px 0 var(--lime)}
+ .v-line li:nth-of-type(even) .v-line__tx{margin:-30px 30px 0 0;box-shadow:-7px 7px 0 var(--ink)}
+ .v-line__tx h3{font:700 29px/1.02 var(--cond);text-transform:uppercase}
+ .v-line__tx p{color:#3f4540}
+ .v-line__num{top:auto;bottom:auto;left:auto;right:0;margin-top:-20px;z-index:3;width:42px;height:42px;font-size:17px;background:#fff;border-color:var(--ink)}
+ .v-line li:nth-of-type(even) .v-line__num{right:auto;left:0}
+ .v-line__num{margin-top:18px}
+ .v.anim .v-line li:nth-of-type(odd) .v-card[data-r]:not(.in){transform:translateX(-60px) rotate(-3deg)}
+ .v.anim .v-line li:nth-of-type(even) .v-card[data-r]:not(.in){transform:translateX(60px) rotate(3deg)}
+ .v.anim .v-line li:nth-of-type(odd) .v-line__tx[data-r]:not(.in){transform:translate(70px,20px)}
+ .v.anim .v-line li:nth-of-type(even) .v-line__tx[data-r]:not(.in){transform:translate(-70px,20px)}
+ .v-line__tx[data-r]{transition-delay:.18s!important}
+
+ /* beneficios: alternam inclinacao leve, como cartoes soltos */
+ .v-checks li:first-child{grid-template-columns:minmax(0,1fr)}
+ .v-checks li:nth-child(even){margin-left:14px}
+ .v-checks li:nth-child(odd):not(:first-child){margin-right:14px}
+}
+@media (max-width:374px){
+ .v h1{font-size:43px}
+ .v-call{font-size:16.5px}
+ .v-checks h3{font-size:23px}
+ .v-pass__node{width:84px}.v-pass__face{width:62px;height:62px}.v-pass__track{height:62px}
+}
+@media (prefers-reduced-motion:reduce){.v-phone{transform:none}}

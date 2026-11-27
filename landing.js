@@ -42,6 +42,8 @@ const chat = () => `<figure class="v-scene" aria-label="Conversa ilustrativa ent
    <div class="v-booked" id="vBooked"><span>${CHECK}</span><div><b>Reserva na Agenda</b><small>Sábado · 10h · 6 pessoas</small></div></div>
   </div>
   <span class="v-stk v-stk--cal" id="vCal">${STK_CAL}</span>
+  <span class="v-call v-call--a" id="vCallA" aria-hidden="true"><b>O cliente pergunta,</b> o Agente responde</span>
+  <span class="v-call v-call--b" id="vCallB" aria-hidden="true"><b>Fechou?</b> Vai para a Agenda</span>
  </figure>`;
 
 /* ilustrações do passo a passo */
@@ -235,8 +237,8 @@ function render(root, on) {
 /* conversa do topo: digita, responde, registra a reserva e recomeça */
 function playChat(v) {
   const scene = v.querySelector('.v-scene'), msgs = [...v.querySelectorAll('.v-msg')], typing = v.querySelector('#vTyping');
-  const booked = v.querySelector('#vBooked'), cal = v.querySelector('#vCal'), status = v.querySelector('#vStatus');
-  if (calm()) { [...msgs, booked, cal].forEach(el => el.classList.add('on')); return; }
+  const booked = v.querySelector('#vBooked'), cal = v.querySelector('#vCal'), callA = v.querySelector('#vCallA'), callB = v.querySelector('#vCallB'), status = v.querySelector('#vStatus');
+  if (calm()) { [...msgs, booked, cal, callA, callB].forEach(el => el.classList.add('on')); return; }
   scene.classList.add('play');
   let seen = true;
   if ('IntersectionObserver' in window) new IntersectionObserver(e => seen = e[0].isIntersecting, { threshold: .15 }).observe(scene);
@@ -259,12 +261,12 @@ function playChat(v) {
       for (let i = first ? 1 : 0; i < msgs.length; i++) {
         const agent = msgs[i].classList.contains('v-msg--a');
         writing(msgs[i], true); await wait(agent ? 1100 : 650); writing(msgs[i], false);
-        status.textContent = 'online'; msgs[i].classList.add('on'); await wait(agent ? 900 : 600);
+        status.textContent = 'online'; msgs[i].classList.add('on'); if (agent) callA.classList.add('on'); await wait(agent ? 900 : 600);
       }
       first = false;
-      booked.classList.add('on'); cal.classList.add('on');
+      booked.classList.add('on'); cal.classList.add('on'); callB.classList.add('on');
       await wait(5200);
-      [...msgs, booked, cal].forEach(el => el.classList.remove('on'));
+      [...msgs, booked, cal, callA, callB].forEach(el => el.classList.remove('on'));
       await wait(700);
     }
   })();
