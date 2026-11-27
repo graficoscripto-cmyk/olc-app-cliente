@@ -270,20 +270,19 @@ body.is-landing{background:#0a0a09}
 }
 
 /* ===== rodada 27/11 · topo ===== */
-.v-rings circle,.v-rings .spin{transform-box:view-box;transform-origin:300px 300px}
-.v-rings .rg{opacity:.38;animation:v-ring 4.2s ease-in-out infinite}
-.v-rings .rg1{animation-delay:.35s}.v-rings .rg2{animation-delay:.7s}.v-rings .rg3{animation-delay:1.05s}
-@keyframes v-ring{50%{transform:scale(1.055);opacity:.75}}
-.v-rings .wave{stroke-width:2.4;opacity:0;animation:v-wave 4.8s cubic-bezier(.2,.6,.4,1) infinite}
-.v-rings .wave1{animation-delay:1.6s}.v-rings .wave2{animation-delay:3.2s}
+.v-layer{position:absolute;inset:0;width:100%;height:100%;fill:none;overflow:visible;will-change:transform}
+.v-layer.base{animation:v-ring 4.2s ease-in-out infinite;opacity:.45}.v-layer.base--b{animation-delay:-2.1s}
+@keyframes v-ring{50%{transform:scale(1.055);opacity:.8}}
+.v-layer.wave{stroke-width:2.6;opacity:0;animation:v-wave 4.8s cubic-bezier(.2,.6,.4,1) infinite}
+.v-layer.wave1{animation-delay:1.6s}.v-layer.wave2{animation-delay:3.2s}
 @keyframes v-wave{0%{transform:scale(.08);opacity:0}12%{opacity:.95}100%{transform:scale(1.14);opacity:0}}
-.v-rings .spin--a{animation:v-spin 13s linear infinite}.v-rings .spin--b{animation:v-spin 21s linear infinite reverse}.v-rings .spin--c{animation:v-spin 7s linear infinite}
+.v-layer.spin--a{animation:v-spin 13s linear infinite}.v-layer.spin--b{animation:v-spin 21s linear infinite reverse}.v-layer.spin--c{animation:v-spin 7s linear infinite}
 @keyframes v-spin{to{transform:rotate(360deg)}}
 .v-rings .dash{stroke-dasharray:3 13;stroke-width:2}
 .v-rings .arc{stroke-dasharray:240 1330;stroke-width:3;stroke-linecap:round}
 .v-rings .sat{fill:var(--lime);stroke:none}.v-rings .sat--b{fill:#fff}
 .v-rings .sweep{fill:var(--lime);stroke:none;opacity:.17}
-.v-rings .bull{fill:var(--lime);stroke:none;animation:v-ring 2.1s ease-in-out infinite}
+.v-layer.bull{fill:var(--lime);stroke:none;animation:v-ring 2.1s ease-in-out infinite}
 
 .v-grid{position:absolute;inset:0;pointer-events:none;overflow:hidden;background:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px) 50% 0/44px 44px,linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px) 50% 0/44px 44px;-webkit-mask-image:linear-gradient(#000 55%,transparent 98%);mask-image:linear-gradient(#000 55%,transparent 98%)}
 .v-plus{position:absolute;width:13px;height:13px;opacity:.3;animation:v-twinkle 3.6s ease-in-out infinite}
@@ -311,7 +310,7 @@ body.is-landing{background:#0a0a09}
 .v-hero__cta{animation:v-rise .8s ease .75s both}
 .v-scene{animation:v-rise .9s cubic-bezier(.2,1,.3,1) .5s both}
 @keyframes v-rise{from{opacity:0;transform:translateY(24px)}}
-@media (prefers-reduced-motion:reduce){.v-rings .wave,.v-rings .sweep,.v-beam{display:none}}
+@media (prefers-reduced-motion:reduce){.v-layer.wave,.v-layer.spin--c,.v-beam{display:none}}
 @media (min-width:900px){.v h1 span{margin-inline:0}.v-rings--hero{left:74%;top:50%}}
 
 /* ===== rodada 27/11 · movimento dentro dos cards ===== */
@@ -375,7 +374,8 @@ body.is-landing{background:#0a0a09}
 @keyframes v-ui{50%{transform:translateY(-5px)}}
 .v-ui__switch::after{animation:v-knob 4.8s ease infinite}
 @keyframes v-knob{0%,70%,100%{transform:none}78%,90%{transform:translateX(-20px)}}
-.v-ui__compose i{animation:v-ring 2s ease-in-out infinite}
+.v-ui__compose i{animation:v-pulse 2s ease-in-out infinite}
+@keyframes v-pulse{50%{transform:scale(1.14)}}
 
 /* ===== nuvem: sobe e desce suave (translate nao briga com a entrada) ===== */
 .v-checks li,.v-take,.v-faq details,.v-ui,.v-end__art{animation:v-cloud 6.4s ease-in-out infinite}

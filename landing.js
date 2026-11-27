@@ -19,11 +19,14 @@ const STK_CAL = svg('0 0 96 100', '<rect x="8" y="14" width="76" height="76" rx=
 const STK_CLOCK = svg('0 0 80 80', '<circle cx="40" cy="40" r="34" fill="#f8e07c"/><circle cx="40" cy="40" r="25" fill="#fff"/><path d="M40 24v17l12 8" fill="none" stroke="#0a0a09" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>');
 const STK_PLANE = svg('0 0 120 90', '<path d="M4 82q28 6 40-14t26-22" fill="none" stroke="#20c8bf" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/><path d="M60 34l56-30-18 62-16-18z" fill="#d7fb5c"/><path d="M82 48l34-44-44 38 2 22z" fill="#a9d63a"/>');
 const ring = (r, c) => `<circle class="${c}" cx="300" cy="300" r="${r}"/>`;
-const RINGS = cls => svg('0 0 600 600', [90, 150, 215, 285].map((r, i) => ring(r, 'rg rg' + i)).join('') +
-  [0, 1, 2].map(i => ring(285, 'wave wave' + i)).join('') +
-  '<g class="spin spin--a">' + ring(182, 'dash') + '<circle class="sat" cx="482" cy="300" r="6"/></g>' +
-  '<g class="spin spin--b">' + ring(250, 'arc') + '<circle class="sat sat--b" cx="300" cy="50" r="4.5"/></g>' +
-  '<g class="spin spin--c"><path class="sweep" d="M300 300L585 300A285 285 0 0 0 546.8 157.5Z"/></g>' + ring(9, 'bull'), 'v-rings ' + (cls || ''));
+const layer = (c, body) => svg('0 0 600 600', body, 'v-layer ' + c);
+const RINGS = cls => `<div class="v-rings ${cls || ''}" aria-hidden="true">` +
+  layer('base', [90, 215].map(r => ring(r, 'rg')).join('')) + layer('base base--b', [150, 285].map(r => ring(r, 'rg')).join('')) +
+  [0, 1, 2].map(i => layer('wave wave' + i, ring(285, ''))).join('') +
+  layer('spin spin--a', ring(182, 'dash') + '<circle class="sat" cx="482" cy="300" r="6"/>') +
+  layer('spin spin--b', ring(250, 'arc') + '<circle class="sat sat--b" cx="300" cy="50" r="4.5"/>') +
+  layer('spin spin--c', '<path class="sweep" d="M300 300L585 300A285 285 0 0 0 546.8 157.5Z"/>') +
+  layer('bull', ring(9, '')) + '</div>';
 
 const CHAT = [
   ['c', 'Oi! Tem horário no sábado?', '10:02'],
