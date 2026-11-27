@@ -2,6 +2,22 @@
 (function () {
 'use strict';
 const API = 'https://n8n.187.53.124.11.sslip.io/webhook/olc-cliente-api';
+
+/* =====================  CHECKOUT CAKTO  =====================
+   Cole aqui os links do checkout (começando com https://). Vazio = modo de teste: o botão do plano
+   abre o passo a passo sem cobrar. Na Cakto, a página de retorno depois do pagamento é:
+     .../olc-app-cliente/?pos_pagamento=1&plano=semanal
+     .../olc-app-cliente/?pos_pagamento=1&plano=mensal
+   Atenção: esse endereço NÃO comprova pagamento. A liberação real precisa ser confirmada no servidor. */
+const CAKTO_CHECKOUT_SEMANAL_URL = '';
+const CAKTO_CHECKOUT_MENSAL_URL = '';
+const CHECKOUT = { semanal: CAKTO_CHECKOUT_SEMANAL_URL, mensal: CAKTO_CHECKOUT_MENSAL_URL };
+const PLAN_NAME = { semanal: 'Teste de 1 Semana · R$ 49', mensal: 'Plano Mensal · R$ 197/mês' };
+
+/* aviso de instalação do Android: pode chegar antes de a tela de instalar aparecer */
+let installPrompt = null, onInstallPrompt = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; if (onInstallPrompt) onInstallPrompt(); });
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 const TABS = [
   ['bot', 'Meu Agente', 'Agente', 'M12 3v3M7 6h10a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3zM9 12h.01M15 12h.01M9.5 16h5M2 11v3M22 11v3'],
   ['chat', 'Testar ao Vivo', 'Testar', 'M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.8L3 21l1.9-5A8.4 8.4 0 1 1 21 11.5z'],
@@ -32,10 +48,39 @@ const quizKey = slug => 'olc.quiz.' + slug;
 const savedPin = slug => store.get('localStorage', sessKey(slug)) || store.get('sessionStorage', sessKey(slug)) || '';
 const ADMIN = 'olc.mestre';
 
-const S = { slug: '', pin: '', client: null, wa: null, tab: 'bot', admin: store.get('sessionStorage', ADMIN) || '', chats: {}, agFilter: 'todos', busyChat: false, linkMode: false };
+const S = { local: '', slug: '', pin: '', client: null, wa: null, tab: 'bot', admin: store.get('sessionStorage', ADMIN) || '', chats: {}, agFilter: 'todos', busyChat: false, linkMode: false };
+
+/* ---------- conta de teste guardada neste aparelho ---------- */
+const localKey = slug => 'olc.local.' + slug;
+const localGet = slug => store.get('localStorage', localKey(slug));
+const LAST = 'olc.last';
+const slugify = v => String(v || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+async function hashPin(pin, salt) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + '|' + pin));
+  return [...new Uint8Array(buf)].map(n => n.toString(16).padStart(2, '0')).join('');
+}
+function localApi(body) {
+  const rec = localGet(body.slug);
+  if (!rec) throw new Error('Não achei esta conta neste aparelho.');
+  const c = rec.client, a = body.action;
+  if (a === 'save_bot_settings') ['botAtivo', 'contextoCliente', 'contextoAdminOLC', 'tomDeVoz', 'horarioInicio', 'horarioFim', 'telefoneDono', 'servicosCatalogo', 'nicho', 'cidade'].forEach(k => { if (body[k] !== undefined) c[k] = body[k]; });
+  if (a === 'add_context') c.notasContexto = [{ id: 'ctx-' + Date.now(), autor: body.autor || c.nomeEmpresa, origem: body.origem || 'Painel do Cliente', texto: body.texto, criadoEm: new Date().toISOString() }, ...list(c.notasContexto)];
+  if (a === 'delete_context') c.notasContexto = list(c.notasContexto).filter(n => n.id !== body.notaId);
+  if (a === 'update_booking') {
+    if (body.novoAgendamento) c.agendamentos = [Object.assign({ id: 'ag-' + Date.now(), status: 'confirmado' }, body.novoAgendamento), ...list(c.agendamentos)];
+    else c.agendamentos = list(c.agendamentos).map(g => g.id === body.agendamentoId ? Object.assign(g, { status: body.status }) : g);
+  }
+  if (a === 'toggle_pause_contact') { const p = list(c.contatosPausados); c.contatosPausados = p.includes(body.telefone) ? p.filter(x => x !== body.telefone) : [...p, body.telefone]; }
+  store.set('localStorage', localKey(body.slug), rec);
+  const out = { ok: true, client: JSON.parse(JSON.stringify(c)), whatsappStatus: { state: 'close' } };
+  if (a === 'test_chat') out.reply = 'Modo de teste: o Agente desta conta ainda não está ligado. O que você ensinou ficou salvo neste aparelho.';
+  if (a === 'connect_whatsapp') out.qr = {};
+  return out;
+}
 
 /* ---------- rede ---------- */
 async function api(body, ms = 60000) {
+  if (body && body.slug && S.local && body.slug === S.local && !body.adminKey) return localApi(body);
   const ac = new AbortController(), t = setTimeout(() => ac.abort(), ms);
   let data;
   try {
@@ -180,7 +225,7 @@ function burst() {
   g.animate([{ opacity: .8, transform: 'scale(.35)' }, { opacity: 0, transform: 'scale(1.3)' }], { duration: 850, easing: 'cubic-bezier(.22,1,.36,1)' }).onfinish = () => g.remove();
 }
 
-/* ---------- Mini Quiz de Onboarding (5 passos) ---------- */
+/* ---------- Mini Quiz de Onboarding (6 passos) ---------- */
 const TONES = [
   ['Simpático, acolhedor e prestativo', '🤝 Simpático e acolhedor', 'Recebe com simpatia, tira dúvidas com paciência e passa segurança.'],
   ['Direto ao ponto, comercial e focado em fechar reserva', '⚡ Comercial e direto ao ponto', 'Respostas objetivas que conduzem o cliente rapidamente para o agendamento.'],
@@ -198,7 +243,8 @@ function needsInitialQuiz(c) {
 function openQuiz(isFirstTime) {
   const c = S.client; if (!c) return;
   let step = 1;
-  const total = 5;
+  const total = 6;
+  let waMode = isPhone() ? 'code' : 'qr', waTimer = null;
   const state = {
     nicho: c.nicho || '',
     resumoServicos: c.contextoCliente || '',
@@ -208,7 +254,8 @@ function openQuiz(isFirstTime) {
     horarioFim: c.horarioFim || '22:00',
     tomDeVoz: c.tomDeVoz || TONES[0][0],
     restricoes: '',
-    telefoneDono: c.telefoneDono || ''
+    telefoneDono: c.telefoneDono || '',
+    zapAgente: c.telefoneDono || ''
   };
   releaseField();
   if (modal.open) { modal.close(); }
@@ -242,6 +289,7 @@ function openQuiz(isFirstTime) {
   const cleanup = () => {
     if (vv) { vv.removeEventListener('resize', fit); vv.removeEventListener('scroll', fit); }
     removeEventListener('resize', fit);
+    clearTimeout(waTimer);
     modal.style.height = modal.style.top = ''; modal.onclick = modal.oninput = modal.onfocusin = null;
     document.documentElement.classList.remove('quiz-lock');
   };
@@ -259,12 +307,95 @@ function openQuiz(isFirstTime) {
     if (step === 3) return ['Quando e onde o Agente atende?', 'Ajuste o horário e conte o local.',
       `<div class="qz-times"><div class="qz-field" data-field><label for="qIni">Atende das</label><input type="time" id="qIni" value="${esc(state.horarioInicio)}"></div><div class="qz-field" data-field><label for="qFim">Até</label><input type="time" id="qFim" value="${esc(state.horarioFim)}"></div></div>` +
       field('Endereço, ponto de encontro ou regras', `<textarea id="qLocal" rows="4" enterkeyhint="done" placeholder="Ex.: saída da Marina às 9h30. Chegar 20 minutos antes.">${esc(state.localRegras)}</textarea>`, true)];
-    if (step === 4) return ['Como o Agente deve falar?', 'Toque em um estilo.',
+    if (step === 4) return ['Conecte o WhatsApp do Agente', 'É o número em que o Agente vai atender.',
+      `<div class="qz-wa">
+       <div class="qz-seg" role="tablist" aria-label="Como conectar"><button type="button" role="tab" data-wamode="code" aria-selected="${waMode === 'code'}">Código no celular</button><button type="button" role="tab" data-wamode="qr" aria-selected="${waMode === 'qr'}">QR Code</button></div>
+       <div class="qz-wapane" data-wapane="code"${waMode === 'code' ? '' : ' hidden'}>
+        ${field('Número do WhatsApp com DDD', `<input id="qZap" type="tel" inputmode="tel" enterkeyhint="done" placeholder="DDD + número" value="${esc(state.zapAgente)}">`, true)}
+        <button type="button" class="qz-gen" id="qGenCode">Gerar código de 8 caracteres</button>
+        <div class="qz-out" id="qCodeOut" aria-live="polite"></div>
+        <p class="qz-how">Abra o WhatsApp &gt; <b>Aparelhos conectados</b> &gt; <b>Conectar com número de telefone</b></p>
+       </div>
+       <div class="qz-wapane" data-wapane="qr"${waMode === 'qr' ? '' : ' hidden'}>
+        <button type="button" class="qz-gen" id="qGenQr">Gerar QR Code</button>
+        <div class="qz-out" id="qQrOut" aria-live="polite"></div>
+        <p class="qz-how">No celular: WhatsApp &gt; <b>Aparelhos conectados</b> &gt; <b>Conectar um aparelho</b></p>
+       </div>
+       <button type="button" class="qz-skip" id="qSkip">Pular e conectar depois no painel</button>
+      </div>`];
+    if (step === 5) return ['Como o Agente deve falar?', 'Toque em um estilo.',
       `<div class="qz-tones" data-field>${TONES.map(([val, title, desc]) => `<button type="button" class="qz-tone ${state.tomDeVoz === val ? 'on' : ''}" aria-pressed="${state.tomDeVoz === val}" data-tone="${esc(val)}"><b>${esc(title)}</b><small>${esc(desc)}</small></button>`).join('')}</div>` +
       field('Ou escreva do seu jeito', `<input id="qTom" enterkeyhint="done" value="${esc(state.tomDeVoz)}">`)];
     return ['O que o Agente não pode prometer?', 'Os dois campos são opcionais.',
       field('Cuidados e restrições', `<textarea id="qRestr" rows="3" placeholder="Ex.: não dar desconto sem me consultar.">${esc(state.restricoes)}</textarea>`, true) +
       field('Seu WhatsApp para aviso de agendamento', `<input id="qTel" type="tel" inputmode="tel" enterkeyhint="done" placeholder="55 + DDD + número" value="${esc(state.telefoneDono)}">`)];
+  }
+
+  /* passo do WhatsApp: código de pareamento ou QR, com a mesma chamada de conexão do painel */
+  function wireWhatsApp(advance) {
+    const err = () => $('.qz-err', modal);
+    const connected = () => {
+      clearTimeout(waTimer);
+      $$('.qz-wapane,.qz-seg,#qSkip', modal).forEach(el => el.hidden = true);
+      const box = $('.qz-wa', modal); if (box && !$('.qz-ok', box)) box.insertAdjacentHTML('afterbegin', '<p class="qz-ok">WhatsApp conectado ao Agente ✓</p>');
+    };
+    if (S.wa && S.wa.state === 'open') { connected(); return; }
+    const slug = S.slug;
+    let tries = 0;
+    const poll = async () => {
+      if (!modal.open || step !== 4 || slug !== S.slug) return;
+      try { const d = await call('get_client', {}, 20000); S.wa = d.whatsappStatus || S.wa; applyClient(d.client); } catch (e) {}
+      if (!modal.open || step !== 4) return;
+      if (S.wa && S.wa.state === 'open') { connected(); return; }
+      if (++tries < 24) waTimer = setTimeout(poll, 5000);
+    };
+    const codeBox = (code, sample) => {
+      const ch = String(code).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      return `<div class="qz-code${sample ? ' is-sample' : ''}">${sample ? '<p class="qz-sample">Exemplo · não conecta</p>' : ''}<p class="qz-digits" aria-label="Código de conexão">${[...ch].map((x, i) => `<span${i === 4 ? ' class="gap"' : ''}>${esc(x)}</span>`).join('')}</p><button type="button" class="qz-copy" data-copy="${esc(ch)}">Copiar código</button></div>`;
+    };
+    const generate = (kind, btn) => {
+      let phone = '';
+      if (kind === 'code') {
+        phone = digits($('#qZap', modal).value);
+        if (phone.length < 10) { err().textContent = 'Digite o número do WhatsApp com DDD.'; return; }
+        if (phone.length <= 11) phone = '55' + phone;
+      }
+      err().textContent = ''; releaseField();
+      const out = $(kind === 'code' ? '#qCodeOut' : '#qQrOut', modal);
+      busy(btn, async () => {
+        if (S.local) {
+          out.innerHTML = (kind === 'code' ? codeBox('EXEMPLO0', true) : `<div class="qz-qr is-sample"><p class="qz-sample">Exemplo · não conecta</p>${sampleQr()}</div>`) +
+            '<p class="qz-note">Modo de teste: o código de verdade aparece aqui quando a conta estiver ativa no sistema.</p>';
+        } else {
+          try {
+            const d = await call('connect_whatsapp', phone ? { phone } : {}, 90000);
+            if (slug !== S.slug || step !== 4) return;
+            S.wa = d.whatsappStatus || S.wa;
+            if (S.wa && S.wa.state === 'open') { connected(); return; }
+            const q = d.qr || {}, img = typeof q.base64 === 'string' && /^data:image\/(png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(q.base64) ? q.base64 : '';
+            if (kind === 'code' && q.pairingCode) out.innerHTML = codeBox(q.pairingCode);
+            else if (kind === 'qr' && img) out.innerHTML = `<div class="qz-qr"><img src="${img}" alt="QR Code para conectar o WhatsApp" width="240" height="240"></div><p class="qz-note">Se expirar, gere um novo.</p>`;
+            else { err().textContent = 'O código ainda não ficou pronto. Tente de novo ou pule e conecte depois.'; return; }
+            tries = 0; clearTimeout(waTimer); waTimer = setTimeout(poll, 4000);
+          } catch (x) { err().textContent = x.message; return; }
+        }
+        btn.textContent = kind === 'code' ? 'Gerar novo código' : 'Gerar novo QR Code';
+        setTimeout(() => out.scrollIntoView({ block: 'nearest', behavior: calm() ? 'auto' : 'smooth' }), 80);
+      });
+    };
+    $$('[data-wamode]', modal).forEach(b => b.onclick = () => {
+      waMode = b.dataset.wamode; releaseField(); err().textContent = '';
+      $$('[data-wamode]', modal).forEach(x => x.setAttribute('aria-selected', x === b));
+      $$('[data-wapane]', modal).forEach(p => p.hidden = p.dataset.wapane !== waMode);
+    });
+    $('#qGenCode', modal).onclick = e => generate('code', e.currentTarget);
+    $('#qGenQr', modal).onclick = e => generate('qr', e.currentTarget);
+    $('#qSkip', modal).onclick = advance;
+    $('.qz-wa', modal).addEventListener('click', async e => {
+      const b = e.target.closest('[data-copy]'); if (!b) return;
+      try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = $('.is-sample', modal) ? 'Exemplo copiado (não conecta)' : 'Código copiado ✓'; }
+      catch (x) { b.textContent = 'Copie manualmente'; }
+    });
   }
 
   function renderStep(back) {
@@ -309,10 +440,13 @@ function openQuiz(isFirstTime) {
       if (step === 1) { state.nicho = ($('#qNicho', modal)?.value || '').trim() || state.nicho; state.resumoServicos = ($('#qResumo', modal)?.value || '').trim(); }
       if (step === 2) { state.precosPagamento = ($('#qPrecos', modal)?.value || '').trim(); }
       if (step === 3) { state.horarioInicio = $('#qIni', modal)?.value || '07:00'; state.horarioFim = $('#qFim', modal)?.value || '22:00'; state.localRegras = ($('#qLocal', modal)?.value || '').trim(); }
-      if (step === 4) { state.tomDeVoz = ($('#qTom', modal)?.value || '').trim() || state.tomDeVoz; }
-      if (step === 5) { state.restricoes = ($('#qRestr', modal)?.value || '').trim(); state.telefoneDono = ($('#qTel', modal)?.value || '').trim(); }
+      if (step === 4) { state.zapAgente = ($('#qZap', modal)?.value || '').trim(); }
+      if (step === 5) { state.tomDeVoz = ($('#qTom', modal)?.value || '').trim() || state.tomDeVoz; }
+      if (step === 6) { state.restricoes = ($('#qRestr', modal)?.value || '').trim(); state.telefoneDono = ($('#qTel', modal)?.value || '').trim(); }
     }
     const prev = $('#qPrev', modal), next = $('#qNext', modal), fin = $('#qFinish', modal);
+    clearTimeout(waTimer);
+    if (step === 4) wireWhatsApp(() => { saveCurrentInputs(); step++; renderStep(); });
     if (prev) prev.onclick = () => { saveCurrentInputs(); step--; renderStep(true); };
     if (next) next.onclick = () => {
       saveCurrentInputs();
@@ -354,7 +488,7 @@ function openQuiz(isFirstTime) {
           modal.close();
           show(S.tab);
           burst();
-          toast('Pronto! O seu Agente já aprendeu tudo sobre a sua empresa.');
+          toast(S.local ? 'Respostas salvas neste aparelho (modo de teste).' : 'Pronto! O seu Agente já aprendeu tudo sobre a sua empresa.');
         } catch (x) { err.textContent = x.message; }
       });
     };
@@ -364,11 +498,139 @@ function openQuiz(isFirstTime) {
   renderStep();
 }
 
+/* ---------- depois do plano: instalar (só celular) → criar conta → quiz ---------- */
+function isPhone() {
+  const ua = navigator.userAgent;
+  if (/Android|iPhone|iPad|iPod|Mobile/i.test(ua)) return true;
+  return /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+}
+const isIOS = () => /iPhone|iPad|iPod/i.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+const isInstalled = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+function sampleQr() {
+  let s = '';
+  for (let y = 0; y < 21; y++) for (let x = 0; x < 21; x++) {
+    if ((x < 8 && y < 8) || (x > 12 && y < 8) || (x < 8 && y > 12)) continue;
+    if ((x * 5 + y * 9 + x * y) % 3 === 0) s += `<rect x="${x}" y="${y}" width="1" height="1"/>`;
+  }
+  [[0, 0], [14, 0], [0, 14]].forEach(([x, y]) => s += `<path d="M${x} ${y}h7v7h-7zm1 1v5h5v-5z" fill-rule="evenodd"/><rect x="${x + 2}" y="${y + 2}" width="3" height="3"/>`);
+  return `<svg viewBox="-1 -1 23 23" role="img" aria-label="Desenho de exemplo de um QR Code" shape-rendering="crispEdges">${s}</svg>`;
+}
+const OLC_MARK = '<svg class="ent-mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="12" fill="#d7fb5c"/><path d="M18 8h4v8l6-6 3 3-6 6h7v4h-7l6 6-3 3-6-6v6h-4v-6l-6 6-3-3 6-6H8v-4h7l-6-6 3-3 6 6z" fill="#0a0a09"/></svg>';
+function startPlan(plan) {
+  const url = String(CHECKOUT[plan] || '').trim();
+  if (/^https:\/\//.test(url)) { location.assign(url); return; }
+  afterPayment(plan);
+}
+function afterPayment(plan) {
+  const p = CHECKOUT[plan] !== undefined ? plan : 'mensal';
+  history.replaceState(null, '', location.pathname + '?pos_pagamento=1&plano=' + p);
+  if (isPhone() && !isInstalled()) screenInstall(p); else screenSignup(p);
+}
+function stepsBar(now) {
+  const names = isPhone() && !isInstalled() ? ['Aplicativo', 'Conta', 'Agente'] : ['Conta', 'Agente'];
+  return `<ol class="ent-steps" aria-label="Etapas">${names.map(n => `<li${n === now ? ' aria-current="step"' : ''}>${n}</li>`).join('')}</ol>`;
+}
+function onboardScreen(plan, now, inner) {
+  releaseField(); if (modal.open) modal.close();
+  document.body.classList.remove('is-landing');
+  S.client = null; S.wa = null; S.local = ''; document.title = 'OLC · Meu Agente';
+  $('#app').innerHTML = `<main class="ent ent--onb">
+   <div class="ent-top"><button type="button" class="ent-btn" data-plans><span aria-hidden="true">←</span> Voltar aos planos</button></div>
+   <section class="ent-box">
+    ${/^https:\/\//.test(CHECKOUT[plan] || '') ? '' : '<p class="ent-test"><b>Modo de teste:</b> nenhum pagamento foi cobrado.</p>'}
+    ${stepsBar(now)}<p class="ent-plan">${PLAN_NAME[plan]}</p>${inner}
+   </section></main>`;
+  $('[data-plans]').onclick = () => { onInstallPrompt = null; history.replaceState(null, '', location.pathname); showLanding(); const t = $('#precos'); if (t) t.scrollIntoView(); };
+  window.scrollTo(0, 0);
+  stagger($$('.ent-box>*'), 0, 18);
+}
+function screenInstall(plan) {
+  const ios = isIOS();
+  const share = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v9h14v-9h-1"/></svg>';
+  const plus = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM12 8v8M8 12h8"/></svg>';
+  onboardScreen(plan, 'Aplicativo', `<div class="ent-head"><h1 class="ent-h">Coloque o app no celular</h1><p class="ent-sub">Um toque no ícone da OLC abre o seu painel.</p></div>
+    <div class="pwa-home" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><span class="pwa-app">${OLC_MARK}<b>Meu Agente</b></span><i></i><i></i></div>
+    <div class="ent-form pwa-how">
+     ${ios ? `<ol class="pwa-list"><li><span>${share}</span><p>Toque em <b>Compartilhar</b> no navegador</p></li><li><span>${plus}</span><p>Escolha <b>Adicionar à Tela de Início</b></p></li></ol>`
+           : `<button type="button" class="ent-go pwa-install" id="pwaBtn" hidden>Instalar Aplicativo no Celular</button><p class="pwa-tip" id="pwaTip">No navegador, toque no menu <b>⋮</b> e em <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.</p>`}
+     <button type="button" class="ent-alt" id="pwaNext">Já adicionei / Continuar para criar minha conta <span aria-hidden="true">→</span></button>
+    </div>`);
+  $('#pwaNext').onclick = () => { onInstallPrompt = null; screenSignup(plan); };
+  if (ios) return;
+  const offer = () => {
+    const b = $('#pwaBtn'); if (!b || !installPrompt) return;
+    b.hidden = false;
+    b.onclick = async () => {
+      const ev = installPrompt; if (!ev) return;
+      installPrompt = null; ev.prompt();
+      const choice = await ev.userChoice.catch(() => null);
+      b.hidden = true;
+      if ($('#pwaTip')) $('#pwaTip').textContent = choice && choice.outcome === 'accepted' ? 'Instalação iniciada. Toque em continuar.' : 'Sem problema. Você pode instalar depois pelo menu do navegador.';
+    };
+  };
+  onInstallPrompt = offer; offer();
+}
+function screenSignup(plan) {
+  const master = !!S.admin;
+  onboardScreen(plan, 'Conta', `<div class="ent-head"><h1 class="ent-h">Criar minha conta</h1><p class="ent-sub">Três campos e o seu Agente começa a aprender.</p></div>
+   <form id="signup" class="ent-form" novalidate>
+    <label>Nome da empresa<input name="nome" maxlength="80" autocomplete="organization" enterkeyhint="next" placeholder="ex.: Pousada Mar Azul"></label>
+    <p class="ent-slug" id="slugView" hidden>Seu identificador para entrar: <b></b></p>
+    <label>Seu WhatsApp<input name="zap" type="tel" inputmode="tel" autocomplete="tel" enterkeyhint="next" placeholder="DDD + número"></label>
+    <label>Criar código de acesso<span class="ent-pw"><input name="pin" type="password" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="40" enterkeyhint="go" placeholder="6 ou mais caracteres"><button type="button" class="ent-eye" aria-pressed="false">Ver</button></span></label>
+    <p class="err" role="alert"></p>
+    <button class="ent-go" type="submit">Criar conta e configurar meu Agente <span aria-hidden="true">→</span></button>
+    <p class="ent-hint">${master ? 'Modo Mestre ativo: a conta será criada no sistema real.' : 'Nesta fase de teste, a conta fica salva só neste aparelho.'}</p>
+   </form>`);
+  const f = $('#signup'), view = $('#slugView');
+  f.nome.oninput = () => { const s = slugify(f.nome.value); view.hidden = !s; $('b', view).textContent = s; };
+  $('.ent-eye', f).onclick = e => { const on = f.pin.type === 'password'; f.pin.type = on ? 'text' : 'password'; e.currentTarget.textContent = on ? 'Ocultar' : 'Ver'; e.currentTarget.setAttribute('aria-pressed', on); };
+  f.onsubmit = e => {
+    e.preventDefault();
+    const nome = f.nome.value.trim(), slug = slugify(nome), pin = f.pin.value.trim(), err = $('.err', f);
+    let zap = digits(f.zap.value);
+    if (!slug) { err.textContent = 'Digite o nome da empresa.'; return; }
+    if (zap.length < 10 || zap.length > 13) { err.textContent = 'Digite o seu WhatsApp com DDD.'; return; }
+    if (pin.length < 6 || /\s/.test(pin)) { err.textContent = 'Crie um código com 6 ou mais caracteres, sem espaços.'; return; }
+    if (localGet(slug)) { err.textContent = 'Já existe uma conta com este nome neste aparelho. Volte e toque em Entrar.'; return; }
+    if (zap.length <= 11) zap = '55' + zap;
+    releaseField(); err.textContent = '';
+    busy($('.ent-go', f), async () => {
+      /* conta no sistema real só com o Modo Mestre aberto: sem a chave mestre o servidor recusa e conta a tentativa como falha */
+      if (S.admin) {
+        try {
+          const d = await api({ action: 'create_client', adminKey: S.admin, slug, nomeEmpresa: nome, pinAcesso: pin, telefoneDono: zap, contextoCliente: '' });
+          store.del('localStorage', quizKey(d.client.slug));
+          await enter(d.client.slug, pin, true, false, true);
+          return;
+        } catch (x) { toast('Não consegui criar no sistema. Salvei neste aparelho, em modo de teste.', true); }
+      }
+      const salt = randomCode(), client = { slug, nomeEmpresa: nome, nicho: '', cidade: '', telefoneDono: zap, contextoCliente: '', notasContexto: [], servicosCatalogo: [], agendamentos: [], conversas: [], contatosPausados: [], botAtivo: true, tomDeVoz: '', horarioInicio: '08:00', horarioFim: '18:00' };
+      store.set('localStorage', localKey(slug), { salt, hash: await hashPin(pin, salt), plano: plan, client });
+      if (!localGet(slug)) { err.textContent = 'O navegador bloqueou o armazenamento. Saia do modo anônimo e tente de novo.'; return; }
+      store.del('localStorage', quizKey(slug));
+      enterLocal(slug, true, true);
+    });
+  };
+  keyboardRoom($('.ent'));
+}
+function enterLocal(slug, keep, forceQuiz) {
+  const rec = localGet(slug); if (!rec) { gate(slug); return; }
+  releaseField(); if (modal.open) modal.close();
+  S.local = slug; S.slug = slug; S.pin = '@local'; S.wa = null; S.tab = 'bot';
+  S.client = JSON.parse(JSON.stringify(rec.client));
+  if (keep !== null) store.set(keep ? 'localStorage' : 'sessionStorage', sessKey(slug), '@local');
+  store.set('localStorage', LAST, slug);
+  history.replaceState(null, '', location.pathname + '?cliente=' + encodeURIComponent(slug));
+  shell(); window.scrollTo(0, 0);
+  if (forceQuiz || needsInitialQuiz(S.client)) openQuiz(true);
+}
+
 /* ---------- vitrine comercial ---------- */
 function showLanding() {
   S.client = null; S.wa = null; document.title = 'OLC · Agente IA para WhatsApp';
   document.body.classList.add('is-landing');
-  window.OLCLanding($('#app'), { login: () => { gate(); window.scrollTo(0, 0); }, master });
+  window.OLCLanding($('#app'), { login: () => { gate(); window.scrollTo(0, 0); }, master, plan: startPlan, testMode: !/^https:\/\//.test(CAKTO_CHECKOUT_SEMANAL_URL) || !/^https:\/\//.test(CAKTO_CHECKOUT_MENSAL_URL) });
 }
 
 /* ---------- entrada (sem lista pública de empresas) ---------- */
@@ -423,12 +685,20 @@ function gate(prefill = '', error = '') {
     e.preventDefault();
     const slug = f.slug.value.trim().toLowerCase().replace(/\s+/g, '-'), pin = f.pin.value.trim();
     if (!slug || !pin) { $('.err', f).textContent = 'Preencha o identificador da empresa e o código de acesso.'; return; }
-    busy($('button[type=submit]', f), async () => { try { await enter(slug, pin, f.keep.checked); } catch (x) { $('.err', f).textContent = x.message; } });
+    busy($('button[type=submit]', f), async () => {
+      try {
+        const rec = localGet(slug);
+        if (rec && await hashPin(pin, rec.salt) === rec.hash) { enterLocal(slug, f.keep.checked); return; }
+        S.local = '';
+        await enter(slug, pin, f.keep.checked);
+      } catch (x) { $('.err', f).textContent = x.message; }
+    });
   };
   $('[data-master]').onclick = master;
   $('[data-back]').onclick = () => { history.replaceState(null, '', location.pathname); showLanding(); window.scrollTo(0, 0); };
 }
 async function enter(slug, pin, keep, viaAdmin, forceQuiz) {
+  S.local = '';
   const d = await api(viaAdmin ? { action: 'get_client', slug, adminKey: S.admin } : { action: 'get_client', slug, pin });
   S.slug = slug; S.client = d.client; S.wa = d.whatsappStatus || null;
   S.pin = viaAdmin ? String(d.client.pinAcesso || '') : pin;
@@ -437,6 +707,7 @@ async function enter(slug, pin, keep, viaAdmin, forceQuiz) {
   releaseField();
   history.replaceState(null, '', location.pathname + '?cliente=' + encodeURIComponent(slug));
   if (modal.open) modal.close();
+  store.set('localStorage', LAST, slug);
   shell();
   const askQuiz = forceQuiz || S.wantQuiz === slug;
   S.wantQuiz = '';
@@ -444,7 +715,7 @@ async function enter(slug, pin, keep, viaAdmin, forceQuiz) {
 }
 function logout() {
   store.del('localStorage', sessKey(S.slug)); store.del('sessionStorage', sessKey(S.slug));
-  delete S.chats[S.slug]; S.slug = S.pin = ''; S.admin = ''; store.del('sessionStorage', ADMIN);
+  delete S.chats[S.slug]; S.local = ''; S.slug = S.pin = ''; S.admin = ''; store.del('sessionStorage', ADMIN);
   history.replaceState(null, '', location.pathname); S.linkMode = false; showLanding(); window.scrollTo(0, 0);
 }
 
@@ -542,6 +813,7 @@ function shell() {
   $$('[data-tab]').forEach(b => b.onclick = () => show(b.dataset.tab));
   $$('[data-master]').forEach(b => b.onclick = master);
   $$('[data-logout]').forEach(b => b.onclick = async () => { if (await confirmBox('Sair do painel?', 'O código de acesso deixa de ficar lembrado neste aparelho.', 'Sair')) logout(); });
+  if (S.local) $('.main').insertAdjacentHTML('afterbegin', '<p class="testbar"><b>Modo de teste.</b> Conta salva só neste aparelho: o Agente ainda não está ligado a um WhatsApp.</p>');
   buildHero();
   $('[data-reload]').onclick = e => busy(e.currentTarget, async () => { await reload(); show(S.tab); toast('Dados atualizados.'); });
   show(S.tab);
@@ -565,7 +837,7 @@ function viewBot(v) {
   const c = S.client;
   v.innerHTML = head('Meu Agente', 'Ligue, conecte seu WhatsApp e treine o seu Agente. Tudo o que você salvar aqui já vale nas próximas conversas.') + `<div class="cols">
   <div class="stack">
-   <section class="card hi"><header><h2>Treinar Meu Agente Agora</h2><button type="button" class="btn gold" id="bOpenQuizCard">${icon(I.spark)}Mini Quiz (5 passos)</button></header>
+   <section class="card hi"><header><h2>Treinar Meu Agente Agora</h2><button type="button" class="btn gold" id="bOpenQuizCard">${icon(I.spark)}Mini Quiz (6 passos)</button></header>
     <form class="stack" id="fNota"><label>Aviso do dia, regra, preço ou orientação<textarea name="texto" rows="3" maxlength="1500" placeholder="Ex.: neste sábado não temos horário pela manhã."></textarea></label><button class="btn primary block">Adicionar ao Agente</button></form>
     <p class="tip">💡 Você também pode treinar o seu Agente pelo WhatsApp. Envie <code>#treinar sua regra</code> ou <code>#aviso seu aviso</code> na conversa <b>com o seu próprio número</b>.</p></section>
    <section class="card" id="cNotas"><header><h2>Regras e Informações Ativas</h2><span class="badge ok" id="nCount"></span></header><ul class="list" id="notas"></ul></section>
@@ -636,6 +908,7 @@ function drawCatalog(items, openIdx = -1) {
 function readCatalog() { return $$('#catalogo details').map(d => { const o = { id: d.dataset.id }; $$('[data-k]', d).forEach(i => o[i.dataset.k] = i.value.trim()); return o; }); }
 
 function connectModal() {
+  if (S.local) { openModal('Conectar meu WhatsApp ao Agente', '<p class="mute">Modo de teste: esta conta está salva só neste aparelho. A conexão de verdade abre quando a OLC ativar a conta no sistema.</p>'); return; }
   let timer = null, alive = true, tries = 0;
   const slug = S.slug;
   openModal('Conectar meu WhatsApp ao Agente', `<p class="mute small">No celular: WhatsApp → Aparelhos conectados → Conectar um aparelho.</p>
@@ -776,10 +1049,19 @@ function drawConvs() {
   const slug = (q.get('cliente') || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
   const linkPin = q.get('pin') || q.get('codigo') || '';
   const wantQuiz = q.get('quiz') === '1';
+  if (q.get('pos_pagamento') === '1') { afterPayment(q.get('plano') || 'mensal'); return; }
+  /* aberto pelo ícone instalado: volta para a última conta, ou para a tela Entrar */
+  if (!slug && (q.get('app') === '1' || isInstalled())) {
+    const last = String(store.get('localStorage', LAST) || ''), kept = last ? savedPin(last) : '';
+    if (kept === '@local' && localGet(last)) { enterLocal(last, null); return; }
+    if (kept && kept !== '@local') { try { await enter(last, kept, null); return; } catch (e) { gate(last, e.message); return; } }
+    gate(last); return;
+  }
   S.linkMode = !!slug;
   S.wantQuiz = wantQuiz ? slug : '';
   if (q.has('pin') || q.has('codigo') || q.has('quiz')) history.replaceState(null, '', location.pathname + (slug ? '?cliente=' + slug : ''));
   const pin = linkPin || (slug ? savedPin(slug) : '');
+  if (slug && pin === '@local') { if (localGet(slug)) enterLocal(slug, null); else gate(slug); return; }
   if (slug && pin) {
     try { await enter(slug, pin, linkPin ? true : null, false, wantQuiz); return; }
     catch (e) { gate(slug, e.message); return; }
