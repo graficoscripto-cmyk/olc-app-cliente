@@ -3,7 +3,7 @@
 'use strict';
 const API = 'https://n8n.187.53.124.11.sslip.io/webhook/olc-cliente-api';
 const CHECKOUT = window.OLC_CONFIG.checkout;
-const PLAN_NAME = { semanal: 'Teste de 1 Semana · R$ 49', mensal: 'Plano Mensal · R$ 197/mês' };
+const PLAN_NAME = { semanal: 'Teste de 7 Dias · R$ 47', mensal: 'Plano Mensal · R$ 197/mês' };
 
 /* aviso de instalação do Android: pode chegar antes de a tela de instalar aparecer */
 let installPrompt = null, onInstallPrompt = null;

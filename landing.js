@@ -2,7 +2,7 @@
 (function () {
 'use strict';
 const WA = 'https://wa.me/5512988685845?text=' + encodeURIComponent('Opa Gustavo! Quero o Agente OLC para a minha empresa.');
-const NAV = [['vComo', 'Como funciona'], ['precos', 'Preços'], ['vFaq', 'Dúvidas']];
+const NAV = [['vComo', 'Como funciona'], ['planos', 'Preços'], ['vFaq', 'Dúvidas']];
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const svg = (box, body, cls) => `<svg class="${cls || ''}" viewBox="${box}" aria-hidden="true">${body}</svg>`;
@@ -79,10 +79,10 @@ const PANEL = [
   ['Conversas', 'O histórico de cada contato. Assuma a conversa quando quiser.', `<div class="v-ui__card"><b>Contato A</b><em>Com o Agente</em><small>“Às 10h, somos 6 pessoas.”</small></div><div class="v-ui__card"><b>Contato B</b><em class="alt">Com você</em><small>“Quero falar com uma pessoa.”</small></div>`]
 ];
 const PLANS = [
-  { id: 'semanal', tag: 'Para experimentar', name: 'Teste de 1 Semana', price: '49', per: 'pagamento único · 7 dias', cta: 'Testar por 7 dias',
-    items: ['Teste de 7 dias completos no seu WhatsApp', 'Acesso completo ao Agente e ao Painel', 'Pagamento único'] },
+  { id: 'semanal', tag: 'Para experimentar', name: 'Teste de 7 Dias', price: '47', per: 'pagamento único', cta: 'Testar por 7 dias',
+    items: ['1 semana completa no seu WhatsApp', 'Acesso ao Agente e ao Painel'] },
   { id: 'mensal', tag: 'Recomendado', name: 'Plano Mensal Completo', price: '197', per: 'por mês', cta: 'Quero o plano mensal', best: true,
-    items: ['Atendimento e agendamento automático o mês inteiro', 'Aplicativo no celular e painel no computador', 'Suporte e atualizações'] }
+    items: ['Atende e agenda o mês inteiro', 'App no celular, suporte e atualizações'] }
 ];
 const pricing = testMode => `<section class="v-price" id="precos" aria-labelledby="vPriceT"><div class="v-warp" aria-hidden="true"></div><div class="v-wrap">
   <div class="v-title" data-r>${eyebrow('Preços')}<h2 id="vPriceT">Quanto custa ter quem atenda</h2></div>
@@ -92,11 +92,13 @@ const pricing = testMode => `<section class="v-price" id="precos" aria-labelledb
    <article class="v-vs__col v-vs__col--olc" data-r><h3>${AGENT}Seu Agente OLC</h3><p class="v-vs__num">R$ 197</p><p class="v-vs__per">por mês, uma fração disso</p><ul><li>Atende e agenda todos os dias</li><li>No horário que a sua empresa definir</li></ul></article>
   </div>
   <p class="v-vs__note" data-r>Comparação de referência de custo mensal. Você continua podendo assumir qualquer conversa.</p>
+  <div class="v-offer" id="planos">
   <div class="v-pay" data-r><span>Pague com</span><b class="v-pay__pix">Pix</b><span>ou</span><b class="v-pay__card">Cartão</b></div>
-  <div class="v-plans">${PLANS.map(p => `<article class="v-plan${p.best ? ' v-plan--best' : ''}" data-r><span class="v-plan__tag">${p.tag}</span><h3>${p.name}</h3>
-    <p class="v-plan__price"><small>R$</small>${p.price}</p><p class="v-plan__per">${p.per}</p>
+  <div class="v-plans">${PLANS.map(p => `<article class="v-plan${p.best ? ' v-plan--best' : ''}" data-r>
+    <div class="v-plan__head"><div><span class="v-plan__tag">${p.tag}</span><h3>${p.name}</h3></div><div class="v-plan__val"><p class="v-plan__price"><small>R$</small>${p.price}</p><p class="v-plan__per">${p.per}</p></div></div>
     <ul>${p.items.map(i => `<li>${CHECK}<span>${i}</span></li>`).join('')}</ul>
-    <button type="button" class="v-btn ${p.best ? 'v-btn--ink' : 'v-btn--lime'}" data-plan="${p.id}">${p.cta} ${ARROW}</button><p class="v-plan__how">Pix ou Cartão</p></article>`).join('')}</div>
+    <button type="button" class="v-btn ${p.best ? 'v-btn--ink' : 'v-btn--lime'}" data-plan="${p.id}">${p.cta} ${ARROW}</button></article>`).join('')}</div>
+  </div>
   ${testMode ? '<p class="v-price__test" data-r><b>Pagamento online em configuração.</b> Por enquanto os botões abrem o passo a passo em modo de teste, sem nenhuma cobrança.</p>' : ''}
  </div></section>`;
 
@@ -127,7 +129,7 @@ function render(root, on) {
    <h1 aria-label="Seu WhatsApp atende e agenda"><em aria-hidden="true"><i class="v-w v-w0"><i>Seu</i></i> <i class="v-w v-w1"><i>WhatsApp</i></i></em> <span aria-hidden="true"><i class="v-w v-w2"><i>atende</i></i> <i class="v-w v-w3"><i>e</i></i> <i class="v-w v-w4"><i>agenda</i></i><b class="v-swash"></b></span></h1>
   </div>
   ${chat()}
-  <div class="v-hero__cta"><a class="v-btn v-btn--lime" href="#precos" data-scroll>Testar meu Agente ${ARROW}</a>${waBtn('Falar no WhatsApp', 'v-btn--line')}</div>
+  <div class="v-hero__cta"><a class="v-btn v-btn--lime" href="#planos" data-scroll>Testar meu Agente ${ARROW}</a>${waBtn('Falar no WhatsApp', 'v-btn--line')}</div>
  </div></section>
 
  <div class="v-tape" aria-hidden="true"><div class="v-tape__run">${[0, 1].map(() => `<div>${['Atendimento no WhatsApp', 'Tira dúvidas dos clientes', 'Agenda automática', 'Mini Quiz de 6 passos', 'Você assume quando quiser'].map(t => `<span>${t}</span>${svg('0 0 40 40', SPARK, 'v-spark')}`).join('')}</div>`).join('')}</div></div>
