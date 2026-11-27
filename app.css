@@ -298,3 +298,8 @@ details.item>.body{padding:0 13px 13px}
  .shell:has(.cv.open) .view-head{display:block}
  .cv-msgs{max-height:calc(100dvh - 430px);min-height:300px}
 }
+@media (min-width:900px){
+ .view.is-chat .view-head{margin-bottom:10px}.view.is-chat .view-head p{display:none}
+ .shell.has-bar .chat{height:max(360px,calc(100dvh - 262px))}
+ .shell:not(.has-bar) .chat{height:max(400px,calc(100dvh - 180px))}
+}
