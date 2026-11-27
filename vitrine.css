@@ -514,3 +514,19 @@ body.is-landing{background:#0a0a09}
  .v-pass__node{width:84px}.v-pass__face{width:62px;height:62px}.v-pass__track{height:62px}
 }
 @media (prefers-reduced-motion:reduce){.v-phone{transform:none}}
+
+/* acertos de contraste, sobreposicao e desempenho */
+.v .v-panel h2,.v .v-take h3{color:#fff}
+.v .v-checks li:nth-child(3) h3{color:#fff}
+.v .v-checks li h3,.v .v-line__tx h3,.v .v-how h2,.v .v-does h2,.v .v-faq h2{color:var(--ink)}
+.v .v-checks li:nth-child(3) h3{color:#fff}
+.v-plus1{left:3%;top:196px}.v-plus7{left:auto;right:4%;top:262px}.v-plus2{top:318px;right:3%}
+.v-hero:not(.live) *,.v-tape:not(.live) *,.v-panel:not(.live) *,.v-end:not(.live) *{animation-play-state:paused!important}
+@media (max-width:899px){
+ .v-scene{margin-top:56px!important}
+ .v-call--a{top:-52px}
+ .v-art--2{padding-bottom:52px}
+ .v-phone{animation-name:v-stage-lite}
+ @keyframes v-stage-lite{0%,100%{transform:translateY(0) rotate(-.6deg)}50%{transform:translateY(-5px) rotate(.6deg)}}
+ .v-beam{display:none}
+}

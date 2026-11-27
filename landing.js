@@ -211,8 +211,8 @@ function render(root, on) {
   }
   if ('IntersectionObserver' in window) {
     const live = new IntersectionObserver(list => list.forEach(en => en.target.classList.toggle('live', en.isIntersecting)), { rootMargin: '60px' });
-    qa('.v-card,.v-take,.v-checks li,.v-ui,.v-faq details').forEach(el => live.observe(el));
-  } else qa('.v-card,.v-take,.v-checks li,.v-ui,.v-faq details').forEach(el => el.classList.add('live'));
+    qa('.v-hero,.v-tape,.v-panel,.v-end,.v-card,.v-take,.v-checks li,.v-ui,.v-faq details').forEach(el => live.observe(el));
+  } else qa('.v-hero,.v-tape,.v-panel,.v-end,.v-card,.v-take,.v-checks li,.v-ui,.v-faq details').forEach(el => el.classList.add('live'));
   const nav = q('#vNav'), fill = q('#vFill'), line = q('#vLine'), nums = qa('.v-line__num');
   let lastY = scrollY, tick = false;
   const onScroll = () => {
