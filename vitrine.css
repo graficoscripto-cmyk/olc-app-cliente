@@ -152,11 +152,6 @@ body.is-landing{background:#0a0a09}
 .v-checks small{display:block;margin-top:10px;padding:9px 11px;border-radius:12px;background:#fff3bf;font-size:13px;font-weight:700;line-height:1.4;color:#453700}
 .v-take{display:grid;justify-items:center;gap:14px;margin-top:26px;padding:24px 18px;border-radius:26px;background:var(--ink);color:#fff;text-align:center}
 .v-take__tag{font:500 11px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
-.v-take__who{position:relative;width:76px;height:76px}
-.v-take__face{position:absolute;inset:0;transition:opacity .3s,transform .5s cubic-bezier(.3,1.6,.5,1)}
-.v-take__face svg{display:block;width:100%;height:100%}
-.v-take__face.is-you,.v-take.mine .is-agent{opacity:0;transform:scale(.4) rotate(-30deg)}
-.v-take.mine .is-you{opacity:1;transform:none}
 .v-take p{min-height:3.1em;max-width:22em;font-size:16px;font-weight:700}
 .v-switch{display:flex;align-items:center;gap:12px;min-height:52px;padding:0 20px 0 12px;border:1.5px solid #43433e;border-radius:99px;background:transparent;color:#fff;font-size:15px;font-weight:800}
 .v-switch i{position:relative;width:52px;height:30px;border-radius:99px;background:#393935}
