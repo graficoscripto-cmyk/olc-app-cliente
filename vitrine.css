@@ -1,6 +1,9 @@
 /* Vitrine do Agente OLC: topo escuro com anéis, títulos condensados, acento limão e cartões arredondados.
    Celular primeiro; só transform e opacity são animados. */
-body.is-landing{background:#0a0a09}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#0a0a09}
+.boot{padding:40px 22px;color:#b4b4aa;text-align:center;font:500 16px system-ui,sans-serif}
+summary{cursor:pointer}
 .v{--ink:#0a0a09;--ink2:#151513;--line:#2a2a27;--lime:#d7fb5c;--teal:#20c8bf;--teald:#0a6a64;--sun:#f8e07c;--paper:#f4f5ee;--mute:#55605b;--muted:#b4b4aa;--cond:'Barlow Condensed','Hanken Grotesk',sans-serif;--mono:'DM Mono',ui-monospace,monospace;font:500 16px/1.55 'Hanken Grotesk',system-ui,sans-serif;color:var(--ink);overflow-x:clip}
 .v *,.v *::before,.v *::after{box-sizing:border-box}
 .v h1,.v h2,.v h3,.v p,.v ul,.v ol,.v figure{margin:0;padding:0}
@@ -481,7 +484,7 @@ body.is-landing{background:#0a0a09}
 }
 
 /* ===== rodada 3 · fundo: grade distorcida e um unico destaque discreto ===== */
-.v-warp{position:absolute;inset:0;pointer-events:none;overflow:hidden;background:url("bg-grid.svg?v=10") 50% 0/560px 560px repeat}
+.v-warp{position:absolute;inset:0;pointer-events:none;overflow:hidden;background:url("bg-grid.svg?v=11") 50% 0/560px 560px repeat}
 .v-warp::after{content:"";position:absolute;inset:0;background:radial-gradient(70% 46% at 50% 24%,rgba(10,10,9,.58),transparent 72%),linear-gradient(transparent 68%,var(--ink) 97%)}
 .v-hero .v-warp::before{content:"";position:absolute;left:50%;top:430px;width:520px;height:520px;margin-left:-260px;border-radius:50%;background:radial-gradient(closest-side,rgba(215,251,92,.12),transparent);animation:v-glow 9s ease-in-out infinite}
 @keyframes v-glow{50%{transform:scale(1.14);opacity:.65}}
