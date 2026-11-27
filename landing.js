@@ -105,10 +105,10 @@ function render(root, on) {
    <h1 aria-label="Seu WhatsApp atende e agenda"><em aria-hidden="true"><i class="v-w v-w0"><i>Seu</i></i> <i class="v-w v-w1"><i>WhatsApp</i></i></em> <span aria-hidden="true"><i class="v-w v-w2"><i>atende</i></i> <i class="v-w v-w3"><i>e</i></i> <i class="v-w v-w4"><i>agenda</i></i><b class="v-swash"></b></span></h1>
   </div>
   ${chat()}
-  <div class="v-hero__cta">${btn('Testar meu Agente ' + ARROW, 'data-login', 'v-btn--lime')}${waBtn('Falar no WhatsApp', 'v-btn--line')}<p><b>5 passos</b> para ensinar o seu Agente</p></div>
+  <div class="v-hero__cta">${btn('Testar meu Agente ' + ARROW, 'data-login', 'v-btn--lime')}${waBtn('Falar no WhatsApp', 'v-btn--line')}</div>
  </div></section>
 
- <div class="v-tape" aria-hidden="true"><div class="v-tape__run">${[0, 1].map(() => `<div>${['Atendimento no WhatsApp', 'Agenda integrada', 'Mini Quiz de 5 passos', 'Você assume quando quiser'].map(t => `<span>${t}</span>${svg('0 0 40 40', SPARK, 'v-spark')}`).join('')}</div>`).join('')}</div></div>
+ <div class="v-tape" aria-hidden="true"><div class="v-tape__run">${[0, 1].map(() => `<div>${['Atendimento no WhatsApp', 'Tira dúvidas dos clientes', 'Agenda automática', 'Mini Quiz de 5 passos', 'Você assume quando quiser'].map(t => `<span>${t}</span>${svg('0 0 40 40', SPARK, 'v-spark')}`).join('')}</div>`).join('')}</div></div>
 
  <section class="v-how" id="vComo" aria-labelledby="vComoT"><div class="v-wrap">
   <div class="v-title" data-r>${eyebrow('Como funciona')}<h2 id="vComoT">Do primeiro oi à agenda</h2><p>Você ensina o que a empresa oferece. O Agente atende com essas informações.</p></div>
