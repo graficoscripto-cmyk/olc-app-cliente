@@ -12,7 +12,8 @@ if ('serviceWorker' in navigator) addEventListener('load', () => navigator.servi
 const TABS = [
   ['bot', 'Meu Agente', 'Agente', 'M12 3v3M7 6h10a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3zM9 12h.01M15 12h.01M9.5 16h5M2 11v3M22 11v3'],
   ['chat', 'Testar ao Vivo', 'Testar', 'M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.8L3 21l1.9-5A8.4 8.4 0 1 1 21 11.5z'],
-  ['agenda', 'Agenda & Conversas', 'Agenda', 'M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM8.5 14.5l2.3 2.3 4.7-4.6']
+  ['agenda', 'Agenda', 'Agenda', 'M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM8.5 14.5l2.3 2.3 4.7-4.6'],
+  ['convs', 'Conversas', 'Conversas', 'M4 5h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM19 9h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1v3l-4-3h-3']
 ];
 const I = {
   x: 'M6 6l12 12M18 6L6 18', trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
@@ -39,7 +40,7 @@ const quizKey = slug => 'olc.quiz.' + slug;
 const savedPin = slug => store.get('localStorage', sessKey(slug)) || store.get('sessionStorage', sessKey(slug)) || '';
 const ADMIN = 'olc.mestre';
 
-const S = { demo: false, local: '', slug: '', pin: '', client: null, wa: null, tab: 'bot', admin: store.get('sessionStorage', ADMIN) || '', chats: {}, agFilter: 'todos', busyChat: false, linkMode: false };
+const S = { demo: false, local: '', slug: '', pin: '', client: null, wa: null, tab: 'bot', admin: store.get('sessionStorage', ADMIN) || '', chats: {}, agFilter: 'todos', convFilter: 'todas', convQuery: '', convSel: '', busyChat: false, linkMode: false };
 
 /* ---------- conta de teste guardada neste aparelho ---------- */
 const localKey = slug => 'olc.local.' + slug;
@@ -417,16 +418,24 @@ function demoData() {
       { id: 's2', nome: 'Passeio Pôr do Sol (exemplo)', preco: 'Consultar', duracao: 'Fim de tarde', detalhes: 'Roteiro ilustrativo.' },
       { id: 's3', nome: 'Dia Inteiro (exemplo)', preco: 'Consultar', duracao: 'Dia todo', detalhes: 'Roteiro ilustrativo.' }],
     agendamentos: [
-      { id: 'g1', clienteNome: 'Cliente Exemplo A', clienteTelefone: '', servico: 'Passeio Ilhas (exemplo)', dataHora: 'Sábado às 10h', detalhes: '6 pessoas', status: 'confirmado' },
-      { id: 'g2', clienteNome: 'Cliente Exemplo B', clienteTelefone: '', servico: 'Passeio Pôr do Sol (exemplo)', dataHora: 'Domingo às 16h', detalhes: '2 pessoas', status: 'confirmado' },
-      { id: 'g3', clienteNome: 'Cliente Exemplo C', clienteTelefone: '', servico: 'Dia Inteiro (exemplo)', dataHora: 'Quarta às 9h', detalhes: '8 pessoas', status: 'concluido' }],
+      { id: 'g1', clienteNome: 'Cliente Exemplo A', clienteTelefone: '', servico: 'Passeio Ilhas (exemplo)', dataHora: 'Hoje às 10h', detalhes: '6 pessoas. Vão levar uma criança.', status: 'confirmado' },
+      { id: 'g2', clienteNome: 'Cliente Exemplo B', clienteTelefone: '', servico: 'Passeio Pôr do Sol (exemplo)', dataHora: 'Hoje às 16h30', detalhes: '2 pessoas. Aniversário de casamento.', status: 'pendente' },
+      { id: 'g3', clienteNome: 'Cliente Exemplo E', clienteTelefone: '', servico: 'Passeio Ilhas (exemplo)', dataHora: 'Sábado às 9h', detalhes: '8 pessoas.', status: 'confirmado' },
+      { id: 'g4', clienteNome: 'Cliente Exemplo F', clienteTelefone: '', servico: 'Dia Inteiro (exemplo)', dataHora: 'Domingo às 9h', detalhes: 'Aguardando confirmar a quantidade de pessoas.', status: 'pendente' },
+      { id: 'g5', clienteNome: 'Cliente Exemplo C', clienteTelefone: '', servico: 'Dia Inteiro (exemplo)', dataHora: 'Quarta passada às 9h', detalhes: '8 pessoas.', status: 'concluido' },
+      { id: 'g6', clienteNome: 'Cliente Exemplo G', clienteTelefone: '', servico: 'Passeio Pôr do Sol (exemplo)', dataHora: 'Sexta passada às 16h', detalhes: 'Cliente pediu para remarcar.', status: 'cancelado' }],
     conversas: [
       { telefone: '5500000000001', nome: 'Cliente Exemplo A', atualizadoEm: ago(1), historico: [
-        { role: 'user', content: 'Oi! Tem horário no sábado?' }, { role: 'assistant', content: 'Tem sim! Qual horário fica melhor para você?' },
-        { role: 'user', content: 'Às 10h, somos 6 pessoas.' }, { role: 'assistant', content: 'Fechado! Já registrei na agenda ✅' }] },
+        { role: 'user', content: 'Oi! Tem horário no sábado?', hora: '10:02' }, { role: 'assistant', content: 'Tem sim! Qual horário fica melhor para você?', hora: '10:02' },
+        { role: 'user', content: 'Às 10h, somos 6 pessoas.', hora: '10:03' }, { role: 'assistant', content: 'Fechado! Já registrei na agenda ✅', hora: '10:03' }] },
       { telefone: '5500000000002', nome: 'Cliente Exemplo D', atualizadoEm: ago(3), historico: [
-        { role: 'user', content: 'Vocês fazem passeio para aniversário?' }, { role: 'assistant', content: 'Posso anotar o seu pedido. Para qual data você pensa?' },
-        { role: 'user', content: 'Quero falar com uma pessoa.' }] }]
+        { role: 'user', content: 'Vocês fazem passeio para aniversário?', hora: '08:14' }, { role: 'assistant', content: 'Posso anotar o seu pedido. Para qual data você pensa?', hora: '08:14' },
+        { role: 'user', content: 'Quero falar com uma pessoa.', hora: '08:20' }] },
+      { telefone: '5500000000003', nome: 'Cliente Exemplo B', atualizadoEm: ago(6), historico: [
+        { role: 'user', content: 'Qual passeio vocês indicam para um casal?', hora: '18:41' }, { role: 'assistant', content: 'O Passeio Pôr do Sol é uma boa opção. Quer que eu anote um horário?', hora: '18:41' },
+        { role: 'user', content: 'Pode ser hoje à tarde.', hora: '18:45' }, { role: 'assistant', content: 'Anotei o pedido para hoje às 16h30. A equipe confirma com você.', hora: '18:45' }] },
+      { telefone: '5500000000004', nome: 'Cliente Exemplo F', atualizadoEm: ago(26), historico: [
+        { role: 'user', content: 'Queria o passeio de dia inteiro no domingo.', hora: '21:07' }, { role: 'assistant', content: 'Certo! Quantas pessoas vão?', hora: '21:07' }] }]
   } };
 }
 function demoReply(m) {
@@ -525,7 +534,6 @@ function screenInstall(plan) {
   onInstallPrompt = offer; offer();
 }
 function screenSignup(plan) {
-  const master = !!S.admin;
   onboardScreen(plan, 'Conta', `<div class="ent-head"><h1 class="ent-h">Criar minha conta</h1><p class="ent-sub">Três campos e o seu Agente começa a aprender.</p></div>
    <form id="signup" class="ent-form" novalidate>
     <label>Nome da empresa<input name="nome" maxlength="80" autocomplete="organization" enterkeyhint="next" placeholder="ex.: Pousada Mar Azul"></label>
@@ -534,7 +542,7 @@ function screenSignup(plan) {
     <label>Criar código de acesso<span class="ent-pw"><input name="pin" type="password" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="40" enterkeyhint="go" placeholder="6 ou mais caracteres"><button type="button" class="ent-eye" aria-pressed="false">Ver</button></span></label>
     <p class="err" role="alert"></p>
     <button class="ent-go" type="submit">Criar conta e configurar meu Agente <span aria-hidden="true">→</span></button>
-    <p class="ent-hint">${master ? 'Modo Mestre ativo: a conta será criada no sistema real.' : 'Nesta fase de teste, a conta fica salva só neste aparelho.'}</p>
+    <p class="ent-hint">Nesta fase de teste, a conta fica salva só neste aparelho.</p>
    </form>`);
   const f = $('#signup'), view = $('#slugView');
   f.nome.oninput = () => { const s = slugify(f.nome.value); view.hidden = !s; $('b', view).textContent = s; };
@@ -550,15 +558,6 @@ function screenSignup(plan) {
     if (zap.length <= 11) zap = '55' + zap;
     releaseField(); err.textContent = '';
     busy($('.ent-go', f), async () => {
-      /* conta no sistema real só com o Modo Mestre aberto: sem a chave mestre o servidor recusa e conta a tentativa como falha */
-      if (S.admin) {
-        try {
-          const d = await api({ action: 'create_client', adminKey: S.admin, slug, nomeEmpresa: nome, pinAcesso: pin, telefoneDono: zap, contextoCliente: '' });
-          store.del('localStorage', quizKey(d.client.slug));
-          await enter(d.client.slug, pin, true, false, true);
-          return;
-        } catch (x) { toast('Não consegui criar no sistema. Salvei neste aparelho, em modo de teste.', true); }
-      }
       const salt = randomCode(), client = { slug, nomeEmpresa: nome, nicho: '', cidade: '', telefoneDono: zap, contextoCliente: '', notasContexto: [], servicosCatalogo: [], agendamentos: [], conversas: [], contatosPausados: [], botAtivo: true, tomDeVoz: '', horarioInicio: '08:00', horarioFim: '18:00' };
       localSave(slug, { salt, hash: await hashPin(pin, salt), plano: plan, client });
       if (!localGet(slug)) { err.textContent = 'O navegador bloqueou o armazenamento. Saia do modo anônimo e tente de novo.'; return; }
@@ -612,8 +611,7 @@ function gate(prefill = '', error = '') {
   releaseField(); if (modal.open) modal.close();
   leaveDemo(); S.client = null; S.wa = null; document.title = 'OLC · Meu Agente';
   $('#app').innerHTML = `<main class="ent">
-  <div class="ent-top ent-top--end"><button type="button" class="ent-btn ent-btn--master" data-master>👑 Modo Mestre</button></div>
-  <section class="ent-box" aria-labelledby="entT">
+    <section class="ent-box" aria-labelledby="entT">
    <div class="ent-head"><svg class="ent-mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="12" fill="#d7fb5c"/><path d="M18 8h4v8l6-6 3 3-6 6h7v4h-7l6 6-3 3-6-6v6h-4v-6l-6 6-3-3 6-6H8v-4h7l-6-6 3-3 6 6z" fill="#0a0a09"/></svg>
     <p class="ent-eyebrow">Para quem já tem conta</p>
     <h1 id="entT">Entrar</h1>
@@ -646,7 +644,6 @@ function gate(prefill = '', error = '') {
       } catch (x) { $('.err', f).textContent = x.message; }
     });
   };
-  $('[data-master]').onclick = master;
   $('[data-opendemo]').onclick = () => openDemo();
   $('[data-signup]').onclick = () => { history.replaceState(null, '', location.pathname); screenSignup(''); };
 }
@@ -679,7 +676,7 @@ function logout() {
 /* ---------- Modo Mestre ---------- */
 function master() {
   if (S.admin) return masterList();
-  openModal('👑 Modo Mestre OLC', `<form class="stack" id="mk"><p class="mute small">Acesso exclusivo da equipe OLC. A chave vale apenas até fechar a aba.</p><label>Chave mestre<input type="password" name="key" autocomplete="off" required></label><p class="err" role="alert"></p><button class="btn primary block">Entrar como mestre</button></form>`);
+  openModal('Acesso da equipe OLC', `<form class="stack" id="mk"><p class="mute small">Exclusivo da equipe OLC. A chave vale só até fechar a aba.</p><label>Chave da equipe<input type="password" name="key" autocomplete="off" required></label><p class="err" role="alert"></p><button class="btn primary block">Entrar</button></form>`);
   const f = $('#mk', modal);
   f.onsubmit = e => {
     e.preventDefault(); const key = f.key.value.trim(); if (!key) return;
@@ -687,16 +684,16 @@ function master() {
       try {
         const d = await api({ action: 'list_clients', adminKey: key });
         S.admin = key; store.set('sessionStorage', ADMIN, key); masterList(d.clients);
-      } catch (x) { $('.err', f).textContent = x.code === 401 ? 'Chave mestre incorreta.' : x.message; }
+      } catch (x) { $('.err', f).textContent = x.code === 401 ? 'Chave incorreta.' : x.message; }
     });
   };
 }
 async function masterList(pre) {
-  openModal('👑 Clientes e Agentes OLC', '<p class="mute">Carregando clientes…</p>');
+  openModal('Clientes da OLC', '<p class="mute">Carregando clientes…</p>');
   let clients = pre;
   try { if (!clients) clients = (await api({ action: 'list_clients', adminKey: S.admin })).clients; }
-  catch (e) { openModal('👑 Clientes e Agentes OLC', `<p class="err">${esc(e.message)}</p>`); return; }
-  openModal('👑 Clientes e Agentes OLC', `<div class="acts"><button type="button" class="btn primary" data-new>+ Criar novo cliente (abre com Quiz)</button><button type="button" class="btn ghost" data-leave>Sair do modo mestre</button></div>
+  catch (e) { openModal('Clientes da OLC', `<p class="err">${esc(e.message)}</p>`); return; }
+  openModal('Clientes da OLC', `<div class="acts"><button type="button" class="btn primary" data-new>+ Criar novo cliente (abre com Quiz)</button><button type="button" class="btn ghost" data-leave>Sair do acesso da equipe</button></div>
   <ul class="list">${list(clients).map(c => `<li class="item"><h3>${esc(c.nomeEmpresa)}</h3><p class="small mute">${esc(c.nicho)}${c.cidade ? ' · ' + esc(c.cidade) : ''}</p><div class="acts"><button type="button" class="btn primary" data-open="${esc(c.slug)}">Abrir painel</button><button type="button" class="btn gold" data-quiz="${esc(c.slug)}">Abrir no Mini Quiz</button><button type="button" class="btn" data-copy="${esc(c.slug)}">Copiar link + código</button></div></li>`).join('') || '<li class="empty">Nenhum cliente ainda.</li>'}</ul>`);
   modal.onclick = e => {
     const o = e.target.closest('[data-open]'), qz = e.target.closest('[data-quiz]'), c = e.target.closest('[data-copy]');
@@ -753,7 +750,6 @@ function newClient() {
 function shell() {
   const c = S.client; document.title = c.nomeEmpresa + ' · Meu Agente OLC';
   const mark = '<svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="12" fill="#d7fb5c"/><path d="M18 8h4v8l6-6 3 3-6 6h7v4h-7l6 6-3 3-6-6v6h-4v-6l-6 6-3-3 6-6H8v-4h7l-6-6 3-3 6 6z" fill="#0a0a09"/></svg>';
-  const masterBtn = S.demo ? '' : S.admin ? '<button type="button" class="btn gold" data-master>👑 Clientes</button>' : '<button type="button" class="btn ghost" data-master>👑 Modo Mestre OLC</button>';
   const exit = S.demo ? 'Sair da demonstração' : 'Sair';
   const bar = S.demo ? `<div class="demobar"><p><b>Demonstração.</b> Empresa e dados fictícios, para conhecer o app por dentro.</p><div class="demo-acts"><button type="button" class="btn primary" data-demoquiz>Abrir Quiz (6 passos)</button><button type="button" class="btn ghost" data-demoinstall>Tela de Instalar</button><button type="button" class="btn ghost" data-demosignup>Tela de Criar Conta</button></div></div>`
     : S.local ? '<p class="testbar"><b>Modo de teste.</b> Conta salva só neste aparelho: o Agente ainda não está ligado a um WhatsApp.</p>' : '';
@@ -761,11 +757,10 @@ function shell() {
   <nav class="side" aria-label="Seções do painel">
    <div class="logo">${mark}<span>Meu Agente</span></div>
    <div class="tabs" role="tablist">${TABS.map(t => `<button type="button" role="tab" class="tab" id="tab-${t[0]}" data-tab="${t[0]}" aria-controls="view">${icon(t[3])}<span>${t[1]}</span></button>`).join('')}</div>
-   <div class="side-foot">${masterBtn}<button type="button" class="btn ghost" data-logout>${icon(I.out)}${exit}</button></div>
+   <div class="side-foot"><button type="button" class="btn ghost" data-logout>${icon(I.out)}${exit}</button></div>
   </nav>
   <div class="main">
-   <header class="top"><span class="top-mark">${mark}</span><div class="who"><b>${esc(c.nomeEmpresa)}</b><small>${S.admin ? '👑 Modo mestre · ' : ''}${esc(c.nicho || 'Meu Agente')}${c.cidade ? ' · ' + esc(c.cidade) : ''}</small></div>
-    ${S.demo ? '' : '<button type="button" class="iconbtn mobile-only" data-master aria-label="Modo Mestre OLC">👑</button>'}
+   <header class="top"><span class="top-mark">${mark}</span><div class="who"><b>${esc(c.nomeEmpresa)}</b><small>${esc(c.nicho || 'Meu Agente')}${c.cidade ? ' · ' + esc(c.cidade) : ''}</small></div>
     <button type="button" class="iconbtn" data-reload aria-label="Atualizar dados">${icon(I.refresh)}</button>
     <button type="button" class="iconbtn mobile-only" data-logout aria-label="${exit}">${icon(I.out)}</button></header>
    ${bar}
@@ -773,7 +768,6 @@ function shell() {
    <main class="view" id="view" role="tabpanel" tabindex="-1"></main>
   </div></div>`;
   $$('[data-tab]').forEach(b => b.onclick = () => show(b.dataset.tab));
-  $$('[data-master]').forEach(b => b.onclick = master);
   $$('[data-logout]').forEach(b => b.onclick = async () => { if (S.demo || await confirmBox('Sair do painel?', 'O código de acesso deixa de ficar lembrado neste aparelho.', 'Sair')) logout(); });
   if (S.demo) {
     $('[data-demoquiz]').onclick = () => openQuiz(false);
@@ -791,10 +785,10 @@ function show(tab) {
   const hero = $('#hero'); hero.className = 'hero m-' + tab; hero.parentElement.className = 'hero-wrap w-' + tab;
   $$('[data-tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === tab));
   const v = $('#view'); v.className = 'view' + (tab === 'chat' ? ' is-chat' : ''); v.setAttribute('aria-labelledby', 'tab-' + tab);
-  ({ bot: viewBot, chat: viewChat, agenda: viewAgenda })[tab](v);
+  ({ bot: viewBot, chat: viewChat, agenda: viewAgenda, convs: viewConvs })[tab](v);
   window.scrollTo(0, 0);
   const dx = Math.sign(dir) * 24;
-  stagger(tab === 'chat' ? [$('.chat', v)] : $$('.view-head,.cols .card', v), dx, dx ? 0 : 16);
+  stagger(tab === 'chat' ? [$('.chat', v)] : $$('.view-head,.cols .card,.ag-sum,.cv', v), dx, dx ? 0 : 16);
 }
 const head = (t, p) => `<div class="view-head"><h1>${t}</h1><p>${p}</p></div>`;
 
@@ -809,7 +803,7 @@ function viewBot(v) {
    <section class="card" id="cNotas"><header><h2>Regras e Informações Ativas</h2><span class="badge ok" id="nCount"></span></header><ul class="list" id="notas"></ul></section>
   </div>
   <div class="stack">
-   ${S.admin ? `<section class="card admin"><h2>👑 Contexto base da OLC</h2><form class="stack" id="fAdmin"><label>Visível só no modo mestre<textarea name="contextoAdminOLC" rows="7">${esc(c.contextoAdminOLC)}</textarea></label><div class="acts"><button class="btn gold">Salvar contexto base</button><button type="button" class="btn" id="bAccess">Copiar link + código</button></div></form></section>` : ''}
+   ${S.admin ? `<section class="card admin"><h2>Contexto base da OLC</h2><form class="stack" id="fAdmin"><label>Visível só para a equipe OLC<textarea name="contextoAdminOLC" rows="7">${esc(c.contextoAdminOLC)}</textarea></label><div class="acts"><button class="btn gold">Salvar contexto base</button><button type="button" class="btn" id="bAccess">Copiar link + código</button></div></form></section>` : ''}
    <section class="card" id="cSrv"><header><h2>Serviços &amp; Preços</h2></header><p class="mute small">Roteiros, procedimentos ou opções que o seu Agente pode apresentar e agendar.</p><div class="list" id="catalogo"></div><div class="acts" id="catActs"><button type="button" class="btn" id="bAddSrv">+ Adicionar serviço</button><button type="button" class="btn primary" id="bSaveSrv">Salvar catálogo</button></div></section>
    <section class="card"><h2>Jeito de Atender do Agente</h2><form class="stack" id="fAj">
     <label>Orientações gerais da empresa<textarea name="contextoCliente" rows="4">${esc(c.contextoCliente)}</textarea></label>
@@ -1014,26 +1008,46 @@ async function send(text) {
   S.busyChat = false; if (slug === S.slug) drawMsgs();
 }
 
-/* ---------- aba 3: agenda e conversas ---------- */
-const STATUS = { confirmado: ['ok', 'Confirmado'], concluido: ['', 'Concluído'], cancelado: ['off', 'Cancelado'] };
+/* ---------- aba 3: agenda ---------- */
+const STATUS = { confirmado: ['ok', 'Confirmado'], pendente: ['warn', 'Pendente'], concluido: ['', 'Concluído'], cancelado: ['off', 'Cancelado'] };
+const ACTIONS = [['confirmado', 'Confirmar', 'ghost'], ['concluido', 'Concluir', 'ghost'], ['cancelado', 'Cancelar', 'danger']];
+const stOf = a => STATUS[a.status] ? a.status : 'pendente';
+/* "hoje": a data do agendamento é texto livre; conta quando diz "hoje" ou traz o dia e o mês de hoje */
+function isToday(a) {
+  const t = String(a.dataHora || ''), d = new Date(), dm = String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0');
+  const iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  return /\bhoje\b/i.test(t) || t.includes(dm) || t.startsWith(iso);
+}
+const waBtn = (tel, label, cls) => {
+  if (S.demo) return `<button type="button" class="btn ${cls}" data-demowa>${label}</button>`;
+  const wa = waLink(tel);
+  return wa ? `<a class="btn ${cls}" href="${wa}" target="_blank" rel="noopener noreferrer">${label}</a>` : '';
+};
+const demoWa = e => { if (e.target.closest('[data-demowa]')) toast('Demonstração: este contato é fictício.'); };
 function viewAgenda(v) {
-  v.innerHTML = head('Agenda &amp; Conversas', 'Horários marcados e conversas atendidas pelo seu Agente no WhatsApp.') + `<div class="cols">
-  <section class="card" id="cAgenda"><header><h2>Agendamentos</h2><button type="button" class="btn primary" id="bNewAg">+ Marcar</button></header><div class="filterbar" id="agF" role="group" aria-label="Filtrar agendamentos"></div><ul class="list" id="ags"></ul></section>
-  <section class="card"><h2>Conversas no WhatsApp</h2><div class="list" id="convs"></div></section></div>`;
-  drawBookings(); drawConvs();
+  v.innerHTML = head('Agenda', 'Todas as reservas do seu Agente, com o que fazer em cada uma.') + `<div class="ag-sum" id="agSum" role="group" aria-label="Resumo da agenda"></div>
+  <section class="card" id="cAgenda"><header><h2>Agendamentos</h2><button type="button" class="btn primary" id="bNewAg">+ Marcar agendamento</button></header><div class="filterbar" id="agF" role="group" aria-label="Filtrar agendamentos"></div><ul class="list ag-list" id="ags"></ul></section>`;
+  drawBookings();
   $('#bNewAg').onclick = bookingModal;
 }
 function drawBookings() {
   const el = $('#ags'); if (!el) return;
-  const all = list(S.client.agendamentos), f = S.agFilter, items = all.filter(a => f === 'todos' || a.status === f);
-  $('#agF').innerHTML = [['todos', 'Todos'], ['confirmado', 'Confirmados'], ['concluido', 'Concluídos'], ['cancelado', 'Cancelados']].map(([k, l]) => `<button type="button" data-f="${k}" aria-pressed="${f === k}">${l} (${k === 'todos' ? all.length : all.filter(a => a.status === k).length})</button>`).join('');
-  $('#agF').onclick = e => { const b = e.target.closest('[data-f]'); if (b) { S.agFilter = b.dataset.f; drawBookings(); } };
+  const all = list(S.client.agendamentos), f = S.agFilter;
+  const count = k => k === 'todos' ? all.length : k === 'hoje' ? all.filter(a => isToday(a) && stOf(a) !== 'cancelado').length : all.filter(a => stOf(a) === k).length;
+  const items = all.filter(a => f === 'todos' || (f === 'hoje' ? isToday(a) && stOf(a) !== 'cancelado' : stOf(a) === f));
+  $('#agSum').innerHTML = [['hoje', 'Hoje'], ['confirmado', 'Confirmados'], ['pendente', 'Pendentes']].map(([k, l]) => `<button type="button" data-f="${k}" class="ag-stat ag-stat--${k}" aria-pressed="${f === k}"><b>${count(k)}</b><span>${l}</span></button>`).join('');
+  const filters = [['todos', 'Todos'], ['confirmado', 'Confirmados'], ['concluido', 'Concluídos'], ['cancelado', 'Cancelados']];
+  $('#agF').innerHTML = filters.map(([k, l]) => `<button type="button" data-f="${k}" aria-pressed="${f === k}">${l} (${count(k)})</button>`).join('');
+  const pick = e => { const b = e.target.closest('[data-f]'); if (b) { S.agFilter = b.dataset.f; drawBookings(); } };
+  $('#agF').onclick = pick; $('#agSum').onclick = pick;
   el.innerHTML = items.map(a => {
-    const [cls, lbl] = STATUS[a.status] || ['', a.status || 'Sem status'], wa = waLink(a.clienteTelefone);
-    return `<li class="item"><div class="item-top"><h3>${esc(a.dataHora)}</h3><span class="badge dot ${cls}">${esc(lbl)}</span></div><p class="kv"><b>${esc(a.clienteNome)}</b> · ${esc(a.servico)}</p>${a.detalhes ? `<p class="small mute">${esc(a.detalhes)}</p>` : ''}
-    <div class="acts">${wa ? `<a class="btn" href="${wa}" target="_blank" rel="noopener noreferrer">Chamar no WhatsApp</a>` : ''}${Object.entries(STATUS).filter(([k]) => k !== a.status).map(([k, s]) => `<button type="button" class="btn ${k === 'cancelado' ? 'danger' : 'ghost'}" data-st="${k}" data-ag="${esc(a.id)}">${k === 'confirmado' ? 'Confirmar' : k === 'concluido' ? 'Concluir' : 'Cancelar'}</button>`).join('')}</div></li>`;
+    const st = stOf(a), [cls, lbl] = STATUS[st];
+    return `<li class="item ag ag--${st}"><div class="item-top"><h3>${esc(a.dataHora)}</h3><span class="badge dot ${cls}">${lbl}</span></div>
+    <dl class="ag-data"><div><dt>Cliente</dt><dd>${esc(a.clienteNome || 'Sem nome')}</dd></div><div><dt>Serviço</dt><dd>${esc(a.servico || 'Não informado')}</dd></div><div class="full"><dt>Observações</dt><dd>${esc(a.detalhes || 'Sem observações')}</dd></div></dl>
+    <div class="acts">${ACTIONS.filter(x => x[0] !== st).map(([k, l, c]) => `<button type="button" class="btn ${c}" data-st="${k}" data-ag="${esc(a.id)}">${l}</button>`).join('')}${waBtn(a.clienteTelefone, 'Chamar no WhatsApp', 'ag-wa')}</div></li>`;
   }).join('') || '<li class="empty">Nenhum agendamento neste filtro.</li>';
   el.onclick = async e => {
+    demoWa(e);
     const b = e.target.closest('[data-st]'); if (!b) return;
     if (b.dataset.st === 'cancelado' && !await confirmBox('Cancelar agendamento?', 'Ele continua na lista como cancelado.', 'Cancelar agendamento')) return;
     busy(b, async () => { const d = await call('update_booking', { agendamentoId: b.dataset.ag, status: b.dataset.st }); applyClient(d.client); drawBookings(); toast('Status atualizado.'); });
@@ -1051,20 +1065,59 @@ function bookingModal() {
     busy($('button.primary', f), async () => { if (slug !== S.slug) return; const d = await call('update_booking', { novoAgendamento: n }); applyClient(d.client); S.agFilter = 'todos'; modal.close(); drawBookings(); const first = $('#ags>li'); if (first) { stagger([first], -24, 0); glow(first); } burst(); toast('Agendamento salvo.'); });
   };
 }
-function drawConvs() {
-  const el = $('#convs'); if (!el) return;
-  const paused = list(S.client.contatosPausados).map(digits);
-  const isPaused = t => paused.some(p => p && p.slice(-8) === digits(t).slice(-8));
-  const open = $$('details[open]', el).map(d => d.dataset.tel);
-  el.innerHTML = list(S.client.conversas).map(c => {
-    const p = isPaused(c.telefone), wa = waLink(c.telefone);
-    return `<details class="item" data-tel="${esc(c.telefone)}" ${open.includes(String(c.telefone)) ? 'open' : ''}><summary><span>${esc(c.nome || c.telefone)}</span>${p ? '<span class="badge warn">Com você</span>' : '<span class="badge ok">Com o Agente</span>'}</summary><div class="body"><p class="small mute">${S.demo ? 'Contato de exemplo' : esc(c.telefone)} · ${esc(when(c.atualizadoEm))}</p><div class="log">${list(c.historico).map(h => `<div class="bubble ${h.role === 'assistant' ? 'out' : 'in'}">${esc(h.content)}</div>`).join('') || `<div class="bubble in">${esc(c.ultimaMensagem)}</div>`}</div><div class="acts"><button type="button" class="btn ${p ? 'primary' : ''}" data-pause="${esc(c.telefone)}">${p ? 'Devolver conversa ao Agente' : 'Pausar Agente neste contato / Assumir conversa'}</button>${wa ? `<a class="btn ghost" href="${wa}" target="_blank" rel="noopener noreferrer">Abrir no WhatsApp</a>` : ''}</div></div></details>`;
-  }).join('') || '<p class="empty">Nenhuma conversa ainda. Elas aparecem quando o WhatsApp estiver conectado e alguém escrever.</p>';
-  el.onclick = e => {
+/* ---------- aba 4: conversas ---------- */
+const initials = n => String(n || '?').trim().split(/\s+/).slice(-2).map(x => x[0]).join('').toUpperCase();
+const pausedList = () => list(S.client.contatosPausados).map(digits);
+const isPaused = t => pausedList().some(p => p && p.slice(-8) === digits(t).slice(-8));
+const lastText = c => { const h = list(c.historico); return String((h.length ? h[h.length - 1].content : c.ultimaMensagem) || 'Sem mensagens'); };
+function viewConvs(v) {
+  S.convSel = '';
+  v.innerHTML = head('Conversas', 'Acompanhe cada atendimento e assuma quando quiser.') + `<div class="cv">
+   <section class="cv-side" aria-label="Lista de conversas">
+    <label class="cv-search"><span class="sr">Buscar por nome ou telefone</span><input id="cvQ" type="search" placeholder="Buscar por nome ou telefone" autocomplete="off" enterkeyhint="search" value="${esc(S.convQuery)}"></label>
+    <div class="filterbar" id="cvF" role="group" aria-label="Filtrar conversas"></div>
+    <ul class="list" id="convs"></ul>
+   </section>
+   <section class="cv-thread" id="thread" aria-label="Conversa aberta" aria-live="polite"></section>
+  </div>`;
+  $('#cvQ').oninput = e => { S.convQuery = e.target.value; drawConvs(); };
+  $('#cvF').onclick = e => { const b = e.target.closest('[data-cf]'); if (b) { S.convFilter = b.dataset.cf; S.convSel = ''; drawConvs(); } };
+  $('#convs').onclick = e => {
+    const b = e.target.closest('[data-conv]'); if (!b) return;
+    releaseField(); S.convSel = b.dataset.conv; drawConvs();
+    if (!matchMedia('(min-width: 900px)').matches) window.scrollTo(0, 0);
+  };
+  $('#thread').onclick = e => {
+    demoWa(e);
+    if (e.target.closest('[data-cvback]')) { S.convSel = ''; drawConvs(); return; }
     const b = e.target.closest('[data-pause]'); if (!b) return;
-    const tel = digits(b.dataset.pause), match = paused.find(p => p.slice(-8) === tel.slice(-8));
+    const tel = digits(b.dataset.pause), match = pausedList().find(p => p.slice(-8) === tel.slice(-8));
     busy(b, async () => { const d = await call('toggle_pause_contact', { telefone: match || tel }); applyClient(d.client); drawConvs(); toast(match ? 'O Agente voltou a atender este contato.' : 'Agente pausado neste contato. A conversa está com você.'); });
   };
+  drawConvs();
+}
+function drawConvs() {
+  const el = $('#convs'); if (!el) return;
+  const all = list(S.client.conversas), f = S.convFilter, q = S.convQuery.trim().toLowerCase(), qd = digits(q);
+  const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const count = k => all.filter(c => k === 'todas' || isPaused(c.telefone) === (k === 'voce')).length;
+  $('#cvF').innerHTML = [['todas', 'Todas'], ['agente', 'Com o Agente'], ['voce', 'Com você']].map(([k, l]) => `<button type="button" data-cf="${k}" aria-pressed="${f === k}">${l} (${count(k)})</button>`).join('');
+  const items = all.filter(c => (f === 'todas' || isPaused(c.telefone) === (f === 'voce')) && (!q || norm(c.nome).includes(norm(q)) || (qd.length >= 3 && digits(c.telefone).includes(qd))));
+  el.innerHTML = items.map(c => {
+    const p = isPaused(c.telefone);
+    return `<li><button type="button" class="cv-row${S.convSel === String(c.telefone) ? ' on' : ''}" data-conv="${esc(c.telefone)}"><span class="ava" aria-hidden="true">${esc(initials(c.nome))}</span><span class="cv-row__tx"><span class="cv-row__top"><b>${esc(c.nome || c.telefone)}</b><time>${esc(when(c.atualizadoEm))}</time></span><span class="cv-row__last">${esc(lastText(c))}</span><span class="badge ${p ? 'warn' : 'ok'}">${p ? 'Com você' : 'Com o Agente'}</span></span></button></li>`;
+  }).join('') || `<li class="empty">${all.length ? 'Nenhuma conversa neste filtro.' : 'Nenhuma conversa ainda. Elas aparecem quando o WhatsApp estiver conectado e alguém escrever.'}</li>`;
+  const box = $('#thread'), c = all.find(x => String(x.telefone) === S.convSel);
+  $('.cv').classList.toggle('open', !!c);
+  if (!c) { box.innerHTML = '<p class="empty">Toque em uma conversa para ver o histórico.</p>'; return; }
+  const p = isPaused(c.telefone);
+  box.innerHTML = `<div class="cv-box">
+    <header class="cv-head"><button type="button" class="iconbtn cv-back" data-cvback aria-label="Voltar para todas as conversas">←</button><span class="ava" aria-hidden="true">${esc(initials(c.nome))}</span><div class="tx"><b>${esc(c.nome || c.telefone)}</b><small>${S.demo ? 'Contato de exemplo' : esc(c.telefone)} · ${esc(when(c.atualizadoEm))}</small></div></header>
+    <p class="cv-state ${p ? 'you' : ''}">${p ? 'Agente em pausa. A conversa está com você.' : 'O Agente está atendendo este contato.'}</p>
+    <div class="msgs cv-msgs">${list(c.historico).map(h => `<div class="bubble ${h.role === 'assistant' ? 'out' : 'in'}">${esc(h.content)}${h.hora ? `<time>${esc(h.hora)}</time>` : ''}</div>`).join('') || `<div class="bubble in">${esc(c.ultimaMensagem || 'Sem mensagens')}</div>`}</div>
+    <div class="cv-acts"><button type="button" class="btn ${p ? 'ghost' : 'primary'} cv-take" data-pause="${esc(c.telefone)}">${p ? 'Devolver conversa ao Agente' : 'Assumir a conversa / Pausar Agente neste contato'}</button>${waBtn(c.telefone, 'Abrir no WhatsApp', 'ghost')}</div>
+  </div>`;
+  const msgs = $('.cv-msgs', box); msgs.scrollTop = msgs.scrollHeight;
 }
 
 /* ---------- início ---------- */

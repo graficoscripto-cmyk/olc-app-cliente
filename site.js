@@ -7,7 +7,6 @@ if (['cliente', 'pos_pagamento', 'app', 'demo', 'mestre', 'pin', 'codigo', 'quiz
 const checkout = window.OLC_CONFIG.checkout, ready = p => /^https:\/\//.test(String(checkout[p] || '').trim());
 window.OLCLanding(document.getElementById('app'), {
   login: () => location.assign('app.html'),
-  master: () => location.assign('app.html?mestre=1'),
   plan: p => location.assign(ready(p) ? checkout[p].trim() : 'app.html?pos_pagamento=1&plano=' + encodeURIComponent(p)),
   testMode: !ready('semanal') || !ready('mensal')
 });

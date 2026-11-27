@@ -75,7 +75,8 @@ const DOES_ICO = [
 const PANEL = [
   ['Meu Agente', 'Ensine, ligue ou pause o Agente e conecte o WhatsApp.', `<div class="v-ui__row"><span>Agente ligado</span><i class="v-ui__switch"></i></div><div class="v-ui__big">${AGENT}<b>Agente pronto.</b></div><div class="v-ui__btn">Mini Quiz (6 passos)</div>`],
   ['Testar ao vivo', 'Converse como se fosse um cliente, usando as regras salvas.', `<p class="v-ui__in">Qual o horário de vocês?</p><p class="v-ui__out">Posso te ajudar! Para qual dia você quer?</p><div class="v-ui__compose"><span>Escreva como um cliente…</span><i>${ARROW}</i></div>`],
-  ['Agenda', 'Horários marcados e conversas atendidas no mesmo lugar.', `<div class="v-ui__card"><b>Sábado · 10h</b><em>Confirmado</em><small>6 pessoas</small></div><div class="v-ui__card"><b>Conversa</b><em class="alt">Com o Agente</em><small>Contato de exemplo</small></div>`]
+  ['Agenda', 'Reservas de hoje, confirmadas e pendentes, com ações em um toque.', `<div class="v-ui__card"><b>Sábado · 10h</b><em>Confirmado</em><small>6 pessoas</small></div><div class="v-ui__card"><b>Domingo · 9h</b><em class="alt">Pendente</em><small>Reserva de exemplo</small></div>`],
+  ['Conversas', 'O histórico de cada contato. Assuma a conversa quando quiser.', `<div class="v-ui__card"><b>Contato A</b><em>Com o Agente</em><small>“Às 10h, somos 6 pessoas.”</small></div><div class="v-ui__card"><b>Contato B</b><em class="alt">Com você</em><small>“Quero falar com uma pessoa.”</small></div>`]
 ];
 const PLANS = [
   { id: 'semanal', tag: 'Para experimentar', name: 'Teste de 1 Semana', price: '49', per: 'pagamento único · 7 dias', cta: 'Testar por 7 dias',
@@ -155,7 +156,7 @@ function render(root, on) {
  </div></section>
 
  <section class="v-panel" aria-labelledby="vPanelT"><div class="v-warp" aria-hidden="true"></div><div class="v-wrap">
-  <div class="v-title" data-r>${eyebrow('O seu painel')}<h2 id="vPanelT">Três telas. Tudo no celular.</h2></div>
+  <div class="v-title" data-r>${eyebrow('O seu painel')}<h2 id="vPanelT">Quatro telas. Tudo no celular.</h2></div>
   <div class="v-tabs" role="tablist" aria-label="Telas do painel">${PANEL.map((p, i) => `<button type="button" role="tab" id="vTab${i}" aria-controls="vPane${i}" aria-selected="${i === 0}" data-pane="${i}">${p[0]}</button>`).join('')}<i class="v-tabs__ink pos0" id="vInk" aria-hidden="true"></i></div>
   <div class="v-panes">${PANEL.map((p, i) => `<div class="v-pane${i === 0 ? ' on' : ''}" role="tabpanel" id="vPane${i}" aria-labelledby="vTab${i}"><p>${p[1]}</p><div class="v-ui" aria-hidden="true">${p[2]}</div></div>`).join('')}</div>
   <p class="v-panel__note">Telas ilustrativas.</p>
@@ -179,7 +180,7 @@ function render(root, on) {
  <footer class="v-foot"><div class="v-wrap">
   <div class="v-logo">${MARK}<b>OLC · Agente</b></div>
   <p>Agente de atendimento e agendamento no WhatsApp, entregue e acompanhado pela OLC Digital.</p>
-  <div class="v-foot__links">${NAV.map(n => `<a href="#${n[0]}" data-scroll>${n[1]}</a>`).join('')}<a href="${WA}" target="_blank" rel="noopener">WhatsApp (12) 98868-5845</a><button type="button" data-master>👑 Modo Mestre OLC</button></div>
+  <div class="v-foot__links">${NAV.map(n => `<a href="#${n[0]}" data-scroll>${n[1]}</a>`).join('')}<a href="${WA}" target="_blank" rel="noopener">WhatsApp (12) 98868-5845</a></div>
   <p class="v-foot__copy">OLC Digital · 2026</p>
  </div></footer>
 </div>`;
@@ -189,7 +190,6 @@ function render(root, on) {
     const s = e.target.closest('[data-scroll]');
     if (s) { e.preventDefault(); const t = q(s.getAttribute('href')); if (t) t.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth' }); return; }
     if (e.target.closest('[data-login]')) on.login();
-    if (e.target.closest('[data-master]')) on.master();
     const plan = e.target.closest('[data-plan]');
     if (plan) on.plan(plan.dataset.plan);
     const tab = e.target.closest('[data-pane]');
@@ -205,7 +205,7 @@ function render(root, on) {
   q('.v-tabs').addEventListener('keydown', e => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
     const cur = qa('[data-pane]').findIndex(b => b.getAttribute('aria-selected') === 'true');
-    const n = (cur + (e.key === 'ArrowRight' ? 1 : 2)) % 3; selectTab(n); q('#vTab' + n).focus();
+    const n = (cur + (e.key === 'ArrowRight' ? 1 : PANEL.length - 1)) % PANEL.length; selectTab(n); q('#vTab' + n).focus();
   });
   selectTab(0);
 
