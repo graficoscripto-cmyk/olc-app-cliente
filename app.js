@@ -267,7 +267,7 @@ function openQuiz(isFirstTime) {
         <div class="qz-segs" role="progressbar" aria-label="Passo do quiz" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="${step}">${Array.from({ length: total }, (_, k) => `<i class="${k + 1 < step ? 'done' : k + 1 === step ? 'now' : ''}"></i>`).join('')}</div>
         <span class="qz-count">${step} de ${total}</span>
       </div>
-      <div class="qz-body"><div class="qz-in"><h2 id="modalTitle" class="qz-q" tabindex="-1" autofocus>${question}</h2><p class="qz-hint">${hint}</p>${answer}</div></div>
+      <div class="qz-body"><div class="qz-in"><p class="qz-eyebrow"><svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="12" fill="#d7fb5c"/><path d="M18 8h4v8l6-6 3 3-6 6h7v4h-7l6 6-3 3-6-6v6h-4v-6l-6 6-3-3 6-6H8v-4h7l-6-6 3-3 6 6z" fill="#0a0a09"/></svg>Mini Quiz · passo ${step}</p><h2 id="modalTitle" class="qz-q" tabindex="-1" autofocus>${question}</h2><p class="qz-hint">${hint}</p>${answer}</div></div>
       <div class="qz-foot"><p class="qz-err" role="alert"></p><div class="qz-nav">
         ${step > 1 ? '<button type="button" class="qz-prev" id="qPrev" aria-label="Voltar">←</button>' : ''}
         <button type="button" class="qz-go" id="${last ? 'qFinish' : 'qNext'}">${last ? 'Concluir e ativar ✓' : 'Continuar →'}</button>
