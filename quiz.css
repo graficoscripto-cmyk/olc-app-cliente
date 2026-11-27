@@ -86,6 +86,7 @@ html.quiz-lock,html.quiz-lock body{overflow:hidden;overscroll-behavior:none}
 .modal.quiz.short .qz-eyebrow{display:none}
 .modal.quiz.short .qz-q{margin-top:0;font-size:28px}
 .modal.quiz.short .qz-hint{display:none}
+.modal.quiz.short .qz-in>.qz-q{position:sticky;top:-2px;z-index:3;padding:4px 0 6px;background:#0a0a09;box-shadow:0 8px 10px -6px #0a0a09;animation:none}
 .modal.quiz.short .qz-main{padding:9px 9px 9px}
 .modal.quiz.short textarea{height:100px;min-height:0}
 .modal.quiz.short .qz-tones{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
@@ -95,8 +96,10 @@ html.quiz-lock,html.quiz-lock body{overflow:hidden;overscroll-behavior:none}
 .modal.quiz.short .qz-foot{padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
 .modal.quiz.short .qz-prev,.modal.quiz.short .qz-go{min-height:48px;border-radius:14px}
 .modal.quiz.tiny .qz-top{padding-block:1px}
-.modal.quiz.tiny .qz-q{font-size:22px}
-.modal.quiz.tiny textarea{height:74px}
+.modal.quiz.tiny .qz-q{font-size:19px}
+.modal.quiz.tiny .qz-main label{font-size:10.5px}
+.modal.quiz.tiny .qz-main{padding:6px 7px 7px}
+.modal.quiz.tiny textarea{height:64px}
 .modal.quiz.tiny input{min-height:46px;padding-block:9px}
 .modal.quiz.tiny .qz-in{gap:7px}
 .modal.quiz.tiny .qz-field{gap:5px}

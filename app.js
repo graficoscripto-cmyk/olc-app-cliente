@@ -218,7 +218,9 @@ function openQuiz(isFirstTime) {
   const keepVisible = () => {
     const el = document.activeElement, body = $('.qz-body', modal);
     if (!body || !el || !body.contains(el) || !el.matches('input,textarea')) return;
-    const field = el.closest('[data-field]') || el, b = body.getBoundingClientRect(), r = field.getBoundingClientRect(), e = el.getBoundingClientRect();
+    const field = el.closest('[data-field]') || el, q = $('.qz-q', modal);
+    const box = body.getBoundingClientRect(), pin = q && getComputedStyle(q).position === 'sticky' ? q.offsetHeight : 0;
+    const b = { top: box.top + pin, bottom: box.bottom }, r = field.getBoundingClientRect(), e = el.getBoundingClientRect();
     if (r.bottom > b.bottom - 6) body.scrollTop += Math.min(r.bottom - b.bottom + 6, Math.max(0, r.top - b.top - 6));
     const e2 = el.getBoundingClientRect();
     if (e2.bottom > b.bottom - 6) body.scrollTop += e2.bottom - b.bottom + 6;
@@ -233,6 +235,7 @@ function openQuiz(isFirstTime) {
     modal.classList.toggle('short', h < 620);
     modal.classList.toggle('tiny', h < 440);
     requestAnimationFrame(keepVisible);
+    setTimeout(keepVisible, 280);
   };
   if (vv) { vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); }
   addEventListener('resize', fit);
@@ -384,6 +387,11 @@ function keyboardRoom(screen) {
       if (hidden > 0) scrollBy(0, Math.min(hidden, Math.max(0, field.top - top - 8)));
       else if (field.top < top + 8) scrollBy(0, field.top - top - 8);
     });
+    setTimeout(() => {
+      if (document.activeElement !== el || !screen.classList.contains('kb')) return;
+      const r = el.getBoundingClientRect(), top = vv ? vv.offsetTop : 0;
+      if (r.top < top + 30) scrollBy(0, r.top - top - 30);
+    }, 260);
   };
   if (vv) vv.addEventListener('resize', fit);
   addEventListener('resize', fit);
