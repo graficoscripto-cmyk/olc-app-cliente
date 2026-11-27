@@ -246,12 +246,6 @@ body.is-landing{background:#0a0a09}
 }
 @media (prefers-reduced-motion:reduce){.v *,.v *::before,.v *::after{animation:none!important;transition:none!important}}
 
-/* entrada no celular: o formulário vem primeiro, sem nada na frente */
-@media (max-width:860px){
- .gate-body>.stack{order:-1}
- .gate-body .gate-radar{display:none}
-}
-
 /* ===== rodada 27/11 · topo ===== */
 
 

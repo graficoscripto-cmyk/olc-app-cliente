@@ -67,9 +67,13 @@ async function busy(btn, fn) {
 }
 const modal = $('#modal');
 let onModalClose = null;
+/* o teclado só abre quando a pessoa toca num campo: solta o campo antes de abrir janela ou trocar de tela
+   (senão, ao fechar uma janela, o navegador devolve o foco ao campo e o teclado reaparece) */
+function releaseField() { const el = document.activeElement; if (el && el.matches('input,textarea,select')) el.blur(); }
 function openModal(title, html, wide) {
-  modal.className = 'modal' + (wide ? ' wide' : '');
-  modal.innerHTML = `<div class="modal-head"><h2 id="modalTitle">${esc(title)}</h2><button type="button" class="iconbtn" data-close aria-label="Fechar">${icon(I.x)}</button></div>${html}`;
+  releaseField();
+  modal.className = 'modal' + (wide ? ' wide' : '') + ($('.shell') ? '' : ' olc');
+  modal.innerHTML = `<div class="modal-head"><h2 id="modalTitle" tabindex="-1" autofocus>${esc(title)}</h2><button type="button" class="iconbtn" data-close aria-label="Fechar">${icon(I.x)}</button></div>${html}`;
   if (!modal.open) modal.showModal();
 }
 modal.addEventListener('click', e => { if (e.target.closest('[data-close]')) modal.close(); });
@@ -206,6 +210,7 @@ function openQuiz(isFirstTime) {
     restricoes: '',
     telefoneDono: c.telefoneDono || ''
   };
+  releaseField();
   if (modal.open) { modal.close(); }
 
   /* o quiz ocupa exatamente a área visível: barras do navegador e teclado */
@@ -310,7 +315,7 @@ function openQuiz(isFirstTime) {
       saveCurrentInputs();
       if (step === 1 && !state.resumoServicos) {
         err.textContent = 'Conte rapidinho o que a empresa oferece.';
-        main.classList.add('miss'); $('#qResumo', modal).focus(); return;
+        main.classList.add('miss'); $('.qz-body', modal).scrollTop = 0; return;
       }
       step++; renderStep();
     };
@@ -360,36 +365,51 @@ function openQuiz(isFirstTime) {
 function showLanding() {
   S.client = null; S.wa = null; document.title = 'OLC · Agente IA para WhatsApp';
   document.body.classList.add('is-landing');
-  window.OLCLanding($('#app'), { login: () => { gate(); window.scrollTo(0, 0); const f = $('#login [name=slug]'); if (f && matchMedia('(hover: hover) and (pointer: fine)').matches) f.focus({ preventScroll: true }); }, master });
+  window.OLCLanding($('#app'), { login: () => { gate(); window.scrollTo(0, 0); }, master });
 }
 
 /* ---------- entrada (sem lista pública de empresas) ---------- */
+/* com o teclado aberto: tela enxuta, com o campo tocado e o botão Entrar visíveis */
+function keyboardRoom(screen) {
+  const vv = window.visualViewport;
+  const fit = () => {
+    if (!screen.isConnected) { if (vv) vv.removeEventListener('resize', fit); removeEventListener('resize', fit); return; }
+    const el = document.activeElement, typing = !!(el && screen.contains(el) && el.matches('input:not([type=checkbox])'));
+    const h = vv ? vv.height : innerHeight, kb = typing && h < 620;
+    screen.classList.toggle('kb', kb);
+    if (!kb) return;
+    requestAnimationFrame(() => {
+      const go = $('.ent-go', screen).getBoundingClientRect(), field = (el.closest('label') || el).getBoundingClientRect();
+      const top = vv ? vv.offsetTop : 0, hidden = go.bottom + 10 - (top + h);
+      if (hidden > 0) scrollBy(0, Math.min(hidden, Math.max(0, field.top - top - 8)));
+      else if (field.top < top + 8) scrollBy(0, field.top - top - 8);
+    });
+  };
+  if (vv) vv.addEventListener('resize', fit);
+  addEventListener('resize', fit);
+  screen.addEventListener('focusin', () => setTimeout(fit, 150));
+  screen.addEventListener('focusout', () => setTimeout(fit, 150));
+}
 function gate(prefill = '', error = '') {
   document.body.classList.remove('is-landing');
   S.client = null; S.wa = null; document.title = 'OLC · Meu Agente';
-  $('#app').innerHTML = `<main class="gate">
-  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
-  <div class="gate-top"><div class="logo"><img src="icon.svg?v=5" alt="" width="38" height="38"><span>OLC · Meu Agente</span></div><div class="gate-top__acts"><button type="button" class="gate-back" data-back>← Voltar ao site</button><button type="button" class="master-btn" data-master>👑 Modo Mestre OLC</button></div></div>
-  <div class="gate-body">
-   <div class="gate-copy">${radar('gate-radar')}<span class="pill-tag">Agente Comercial &amp; Atendimento 24h</span><h1>Seu Agente no WhatsApp, <em>sempre pronto para atender.</em></h1><p>Personalize no Mini Quiz inicial, conecte seu WhatsApp em segundos e acompanhe cada agendamento em tempo real.</p>
-   <div class="gate-steps">
-     <div class="g-step"><b>1</b><span>Responda o Mini Quiz rápido sobre seu negócio</span></div>
-     <div class="g-step"><b>2</b><span>Conecte seu WhatsApp por QR Code ou código</span></div>
-     <div class="g-step"><b>3</b><span>Seu Agente atende, tira dúvidas e agenda 24h</span></div>
-   </div></div>
-   <div class="stack">
-    <form class="card stack" id="login" novalidate>
-     <h2>Entrar no painel do meu Agente</h2>
-     <p class="mute small">Use o código da empresa e a chave recebida no seu WhatsApp.</p>
-     <label>Identificador da empresa<input name="slug" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="ex.: minha-empresa" value="${esc(prefill)}" required></label>
-     <label>Código de acesso<input name="pin" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Digite seu código de acesso" required></label>
-     <label class="check"><input type="checkbox" name="keep" checked>Manter conectado neste aparelho</label>
-     <p class="err" role="alert">${esc(error)}</p>
-     <button class="btn primary block" type="submit">Acessar Meu Agente</button>
-    </form>
-   </div>
-  </div></main>`;
-  stagger($$('.gate-copy>*,.gate-steps,#login'), 0, 16);
+  $('#app').innerHTML = `<main class="ent">
+  <div class="ent-top"><button type="button" class="ent-btn" data-back><span aria-hidden="true">←</span> Voltar ao site</button><button type="button" class="ent-btn ent-btn--master" data-master>👑 Modo Mestre</button></div>
+  <section class="ent-box" aria-labelledby="entT">
+   <div class="ent-head"><svg class="ent-mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="12" fill="#d7fb5c"/><path d="M18 8h4v8l6-6 3 3-6 6h7v4h-7l6 6-3 3-6-6v6h-4v-6l-6 6-3-3 6-6H8v-4h7l-6-6 3-3 6 6z" fill="#0a0a09"/></svg>
+    <p class="ent-eyebrow">Para quem já tem conta</p>
+    <h1 id="entT">Entrar</h1>
+    <p class="ent-sub">Use o identificador da empresa e o código de acesso recebidos no seu WhatsApp.</p></div>
+   <form id="login" class="ent-form" novalidate>
+    <label>Identificador da empresa<input name="slug" autocomplete="username" autocapitalize="none" spellcheck="false" enterkeyhint="next" placeholder="ex.: minha-empresa" value="${esc(prefill)}" required></label>
+    <label>Código de acesso<input name="pin" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="Digite seu código de acesso" required></label>
+    <label class="ent-keep"><input type="checkbox" name="keep" checked><span>Manter conectado neste aparelho</span></label>
+    <p class="err" role="alert">${esc(error)}</p>
+    <button class="ent-go" type="submit">Entrar <span aria-hidden="true">→</span></button>
+   </form>
+  </section></main>`;
+  stagger($$('.ent-head>*,#login'), 0, 18);
+  keyboardRoom($('.ent'));
   const f = $('#login');
   f.onsubmit = e => {
     e.preventDefault();
@@ -406,6 +426,7 @@ async function enter(slug, pin, keep, viaAdmin, forceQuiz) {
   S.pin = viaAdmin ? String(d.client.pinAcesso || '') : pin;
   if (!viaAdmin && keep !== null) store.set(keep ? 'localStorage' : 'sessionStorage', sessKey(slug), pin);
   S.tab = 'bot';
+  releaseField();
   history.replaceState(null, '', location.pathname + '?cliente=' + encodeURIComponent(slug));
   if (modal.open) modal.close();
   shell();
@@ -423,7 +444,7 @@ function logout() {
 function master() {
   if (S.admin) return masterList();
   openModal('👑 Modo Mestre OLC', `<form class="stack" id="mk"><p class="mute small">Acesso exclusivo da equipe OLC. A chave vale apenas até fechar a aba.</p><label>Chave mestre<input type="password" name="key" autocomplete="off" required></label><p class="err" role="alert"></p><button class="btn primary block">Entrar como mestre</button></form>`);
-  const f = $('#mk', modal); f.key.focus();
+  const f = $('#mk', modal);
   f.onsubmit = e => {
     e.preventDefault(); const key = f.key.value.trim(); if (!key) return;
     busy($('button', f), async () => {
