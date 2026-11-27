@@ -2,7 +2,7 @@
 (function () {
 'use strict';
 const WA = 'https://wa.me/5512988685845?text=' + encodeURIComponent('Opa Gustavo! Quero o Agente OLC para a minha empresa.');
-const NAV = [['vComo', 'Como funciona'], ['vFaz', 'O que faz'], ['vFaq', 'Dúvidas']];
+const NAV = [['vComo', 'Como funciona'], ['precos', 'Preços'], ['vFaq', 'Dúvidas']];
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const svg = (box, body, cls) => `<svg class="${cls || ''}" viewBox="${box}" aria-hidden="true">${body}</svg>`;
@@ -46,13 +46,13 @@ const QR = (() => {
   return svg('0 0 128 128', s, 'v-qr__art');
 })();
 const ART = [
-  `<div class="v-mq"><div class="v-mq__segs"><i></i><i></i><i></i><i></i><i></i></div><b>O que a empresa oferece?</b><span class="v-mq__field"><span class="v-mq__type">Passeios privativos de lancha</span><em></em></span><span class="v-mq__btn">Continuar →<i class="v-tap"></i></span></div>`,
+  `<div class="v-mq"><div class="v-mq__segs"><i></i><i></i><i></i><i></i><i></i><i></i></div><b>O que a empresa oferece?</b><span class="v-mq__field"><span class="v-mq__type">Passeios privativos de lancha</span><em></em></span><span class="v-mq__btn">Continuar →<i class="v-tap"></i></span></div>`,
   `<div class="v-qr"><div class="v-qr__box">${QR}<i class="v-qr__scan"></i><span class="v-qr__ok">${CHECK}</span></div><span class="v-qr__frame"><i></i><i></i><i></i><i></i></span><p>WhatsApp → <b>Aparelhos conectados</b></p></div>`,
   `<div class="v-try"><p class="v-try__a">Quero saber dos passeios</p><div class="v-try__slot"><span class="v-try__dots"><i></i><i></i><i></i></span><p class="v-try__b">Temos três roteiros privativos. Quer que eu explique?</p></div><p class="v-try__a">Quero para sábado</p></div>`,
   `<div class="v-agenda"><div class="v-agenda__week">${['S', 'T', 'Q', 'Q', 'S', 'S', 'D'].map((d, i) => `<span class="${i === 5 ? 'on' : ''}">${d}</span>`).join('')}</div><div class="v-agenda__row"><b>10h</b><span>6 pessoas<small>Sábado</small></span><em>Confirmado</em></div><div class="v-agenda__ghost"><i></i></div></div>`
 ];
 const STEPS = [
-  ['Responda o Mini Quiz', 'Cinco passos: o que você oferece, preços, horários, jeito de falar e cuidados.'],
+  ['Responda o Mini Quiz', 'Seis passos: o que você oferece, preços, horários, WhatsApp, jeito de falar e cuidados.'],
   ['Conecte o seu WhatsApp', 'Pelo QR Code ou pelo código no celular, em Aparelhos conectados.'],
   ['Teste como se fosse o cliente', 'Converse com o Agente no painel antes de colocar no ar.'],
   ['Acompanhe a Agenda', 'Veja as reservas, as conversas e assuma quando quiser.']
@@ -61,7 +61,7 @@ const DOES = [
   ['Qualificação de quem chama', 'Entende o que a pessoa quer, pergunta data e quantidade e conduz até a reserva.', 'Prospecção ativa (puxar conversa com novos contatos) não está no painel: consulte a OLC.'],
   ['Atendimento no WhatsApp', 'Responde na hora, no horário que você definir.'],
   ['Agenda automática', 'Reserva confirmada entra na Agenda.'],
-  ['Treino simples', 'Mini Quiz de 5 passos ou comando #treinar no WhatsApp.'],
+  ['Treino simples', 'Mini Quiz de 6 passos ou comando #treinar no WhatsApp.'],
   ['Controle no celular', 'Pause o Agente em um contato e assuma a conversa.']
 ];
 const ico = p => svg('0 0 32 32', p, 'v-bico');
@@ -73,12 +73,34 @@ const DOES_ICO = [
   ico('<path d="M9 4h14v24H9zM14 24h4"/><path d="M13.500 11v8M18.500 11v8"/>')
 ];
 const PANEL = [
-  ['Meu Agente', 'Ensine, ligue ou pause o Agente e conecte o WhatsApp.', `<div class="v-ui__row"><span>Agente ligado</span><i class="v-ui__switch"></i></div><div class="v-ui__big">${AGENT}<b>Agente pronto.</b></div><div class="v-ui__btn">Mini Quiz (5 passos)</div>`],
+  ['Meu Agente', 'Ensine, ligue ou pause o Agente e conecte o WhatsApp.', `<div class="v-ui__row"><span>Agente ligado</span><i class="v-ui__switch"></i></div><div class="v-ui__big">${AGENT}<b>Agente pronto.</b></div><div class="v-ui__btn">Mini Quiz (6 passos)</div>`],
   ['Testar ao vivo', 'Converse como se fosse um cliente, usando as regras salvas.', `<p class="v-ui__in">Qual o horário de vocês?</p><p class="v-ui__out">Posso te ajudar! Para qual dia você quer?</p><div class="v-ui__compose"><span>Escreva como um cliente…</span><i>${ARROW}</i></div>`],
   ['Agenda', 'Horários marcados e conversas atendidas no mesmo lugar.', `<div class="v-ui__card"><b>Sábado · 10h</b><em>Confirmado</em><small>6 pessoas</small></div><div class="v-ui__card"><b>Conversa</b><em class="alt">Com o Agente</em><small>Contato de exemplo</small></div>`]
 ];
+const PLANS = [
+  { id: 'semanal', tag: 'Para experimentar', name: 'Teste de 1 Semana', price: '49', per: 'pagamento único · 7 dias', cta: 'Testar por 7 dias',
+    items: ['Teste de 7 dias completos no seu WhatsApp', 'Acesso completo ao Agente e ao Painel', 'Pagamento único'] },
+  { id: 'mensal', tag: 'Recomendado', name: 'Plano Mensal Completo', price: '197', per: 'por mês', cta: 'Quero o plano mensal', best: true,
+    items: ['Atendimento e agendamento automático o mês inteiro', 'Aplicativo no celular e painel no computador', 'Suporte e atualizações'] }
+];
+const pricing = testMode => `<section class="v-price" id="precos" aria-labelledby="vPriceT"><div class="v-warp" aria-hidden="true"></div><div class="v-wrap">
+  <div class="v-title" data-r>${eyebrow('Preços')}<h2 id="vPriceT">Quanto custa ter quem atenda</h2></div>
+  <div class="v-vs">
+   <article class="v-vs__col v-vs__col--human" data-r><h3>Atendente humano</h3><p class="v-vs__num"><small>de</small> R$ 1.000 <small>a</small> R$ 1.500</p><p class="v-vs__per">por mês</p><ul><li>Mais encargos</li><li>Horário limitado</li></ul></article>
+   <span class="v-vs__x" aria-hidden="true">vs</span>
+   <article class="v-vs__col v-vs__col--olc" data-r><h3>${AGENT}Seu Agente OLC</h3><p class="v-vs__num">R$ 197</p><p class="v-vs__per">por mês, uma fração disso</p><ul><li>Atende e agenda todos os dias</li><li>No horário que a sua empresa definir</li></ul></article>
+  </div>
+  <p class="v-vs__note" data-r>Comparação de referência de custo mensal. Você continua podendo assumir qualquer conversa.</p>
+  <div class="v-pay" data-r><span>Pague com</span><b class="v-pay__pix">Pix</b><span>ou</span><b class="v-pay__card">Cartão</b></div>
+  <div class="v-plans">${PLANS.map(p => `<article class="v-plan${p.best ? ' v-plan--best' : ''}" data-r><span class="v-plan__tag">${p.tag}</span><h3>${p.name}</h3>
+    <p class="v-plan__price"><small>R$</small>${p.price}</p><p class="v-plan__per">${p.per}</p>
+    <ul>${p.items.map(i => `<li>${CHECK}<span>${i}</span></li>`).join('')}</ul>
+    <button type="button" class="v-btn ${p.best ? 'v-btn--ink' : 'v-btn--lime'}" data-plan="${p.id}">${p.cta} ${ARROW}</button><p class="v-plan__how">Pix ou Cartão</p></article>`).join('')}</div>
+  ${testMode ? '<p class="v-price__test" data-r><b>Pagamento online em configuração.</b> Por enquanto os botões abrem o passo a passo em modo de teste, sem nenhuma cobrança.</p>' : ''}
+ </div></section>`;
+
 const FAQ = [
-  ['Como o Agente aprende sobre a minha empresa?', 'Pelo Mini Quiz de 5 passos. Depois você pode ensinar mais pelo painel ou com o comando #treinar no WhatsApp.'],
+  ['Como o Agente aprende sobre a minha empresa?', 'Pelo Mini Quiz de 6 passos. Depois você pode ensinar mais pelo painel ou com o comando #treinar no WhatsApp.'],
   ['Como eu conecto o meu WhatsApp?', 'Pelo QR Code ou pelo código no celular, em Aparelhos conectados.'],
   ['Posso assumir uma conversa?', 'Sim. Você pausa o Agente naquele contato e continua a conversa.'],
   ['Em que horário ele responde?', 'No horário que você definir.'],
@@ -104,10 +126,10 @@ function render(root, on) {
    <h1 aria-label="Seu WhatsApp atende e agenda"><em aria-hidden="true"><i class="v-w v-w0"><i>Seu</i></i> <i class="v-w v-w1"><i>WhatsApp</i></i></em> <span aria-hidden="true"><i class="v-w v-w2"><i>atende</i></i> <i class="v-w v-w3"><i>e</i></i> <i class="v-w v-w4"><i>agenda</i></i><b class="v-swash"></b></span></h1>
   </div>
   ${chat()}
-  <div class="v-hero__cta">${btn('Testar meu Agente ' + ARROW, 'data-login', 'v-btn--lime')}${waBtn('Falar no WhatsApp', 'v-btn--line')}</div>
+  <div class="v-hero__cta"><a class="v-btn v-btn--lime" href="#precos" data-scroll>Testar meu Agente ${ARROW}</a>${waBtn('Falar no WhatsApp', 'v-btn--line')}</div>
  </div></section>
 
- <div class="v-tape" aria-hidden="true"><div class="v-tape__run">${[0, 1].map(() => `<div>${['Atendimento no WhatsApp', 'Tira dúvidas dos clientes', 'Agenda automática', 'Mini Quiz de 5 passos', 'Você assume quando quiser'].map(t => `<span>${t}</span>${svg('0 0 40 40', SPARK, 'v-spark')}`).join('')}</div>`).join('')}</div></div>
+ <div class="v-tape" aria-hidden="true"><div class="v-tape__run">${[0, 1].map(() => `<div>${['Atendimento no WhatsApp', 'Tira dúvidas dos clientes', 'Agenda automática', 'Mini Quiz de 6 passos', 'Você assume quando quiser'].map(t => `<span>${t}</span>${svg('0 0 40 40', SPARK, 'v-spark')}`).join('')}</div>`).join('')}</div></div>
 
  <section class="v-how" id="vComo" aria-labelledby="vComoT"><div class="v-wrap">
   <div class="v-title" data-r>${eyebrow('Como funciona')}<h2 id="vComoT">Do primeiro oi à agenda</h2><p>Você ensina o que a empresa oferece. O Agente atende com essas informações.</p></div>
@@ -139,6 +161,8 @@ function render(root, on) {
   <p class="v-panel__note">Telas ilustrativas.</p>
  </div></section>
 
+ ${pricing(!!on.testMode)}
+
  <section class="v-faq" id="vFaq" aria-labelledby="vFaqT"><div class="v-wrap v-faq__in">
   <div class="v-title" data-r>${eyebrow('Sem enrolação')}<h2 id="vFaqT">Dúvidas diretas</h2></div>
   <div>${FAQ.map(f => `<details data-r><summary><span>${f[0]}</span><i>${ARROW}</i></summary><p>${f[1]}</p></details>`).join('')}</div>
@@ -166,6 +190,8 @@ function render(root, on) {
     if (s) { e.preventDefault(); const t = q(s.getAttribute('href')); if (t) t.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth' }); return; }
     if (e.target.closest('[data-login]')) on.login();
     if (e.target.closest('[data-master]')) on.master();
+    const plan = e.target.closest('[data-plan]');
+    if (plan) on.plan(plan.dataset.plan);
     const tab = e.target.closest('[data-pane]');
     if (tab) selectTab(+tab.dataset.pane);
   });
@@ -200,8 +226,8 @@ function render(root, on) {
   }
   if ('IntersectionObserver' in window) {
     const live = new IntersectionObserver(list => list.forEach(en => en.target.classList.toggle('live', en.isIntersecting)), { rootMargin: '60px' });
-    qa('.v-hero,.v-tape,.v-panel,.v-end,.v-card,.v-take,.v-checks li,.v-ui,.v-faq details').forEach(el => live.observe(el));
-  } else qa('.v-hero,.v-tape,.v-panel,.v-end,.v-card,.v-take,.v-checks li,.v-ui,.v-faq details').forEach(el => el.classList.add('live'));
+    qa('.v-hero,.v-tape,.v-price,.v-panel,.v-end,.v-card,.v-take,.v-checks li,.v-ui,.v-faq details').forEach(el => live.observe(el));
+  } else qa('.v-hero,.v-tape,.v-price,.v-panel,.v-end,.v-card,.v-take,.v-checks li,.v-ui,.v-faq details').forEach(el => el.classList.add('live'));
   const nav = q('#vNav'), fill = q('#vFill'), line = q('#vLine'), nums = qa('.v-line__num');
   let lastY = scrollY, tick = false;
   const onScroll = () => {
