@@ -505,7 +505,7 @@ body.is-landing{background:#0a0a09}
 .v-vs__col li::before{position:absolute;left:0;top:0;width:20px;height:20px;border-radius:7px;text-align:center;font:900 13px/20px sans-serif}
 .v-vs__col--human{border:1.5px dashed #5a5a52;background:#121211;color:#c9c9c0}
 .v .v-vs__col--human h3{color:#dcdcd4}
-.v-vs__col--human .v-vs__num{color:#e8e8e0;text-decoration:line-through;text-decoration-color:#ff8f7a;text-decoration-thickness:3px;font-size:clamp(28px,8.4vw,44px)}
+.v-vs__col--human .v-vs__num{color:#ffab9b;font-size:clamp(28px,8.4vw,44px)}
 .v-vs__col--human li::before{content:"\2013";background:#34342f;color:#ffab9b}
 .v-vs__col--olc{background:#fff;color:var(--ink);box-shadow:7px 7px 0 var(--lime)}
 .v .v-vs__col--olc h3{color:var(--ink)}
@@ -541,3 +541,4 @@ body.is-landing{background:#0a0a09}
  .v-plans{grid-template-columns:repeat(2,minmax(0,1fr));gap:34px;max-width:920px;margin-inline:auto}
  .v-plan--best{order:0}
 }
+.v .v-price .v-plan:not(.v-plan--best) h3{color:#fff}
