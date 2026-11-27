@@ -530,3 +530,4 @@ body.is-landing{background:#0a0a09}
  @keyframes v-stage-lite{0%,100%{transform:translateY(0) rotate(-.6deg)}50%{transform:translateY(-5px) rotate(.6deg)}}
  .v-beam{display:none}
 }
+@media (min-width:900px){.v-plus3{left:42%;top:78%}.v-plus1{left:48%;top:14%}}
