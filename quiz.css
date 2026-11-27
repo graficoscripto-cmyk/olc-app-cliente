@@ -237,3 +237,9 @@ body:not(:has(.shell)) .toast.bad{background:#fff3bf;color:#453700}
 
 /* faixa de modo de teste no painel */
 .testbar{margin:10px 14px 0;padding:10px 13px;border:1.5px solid #131313;border-radius:12px;background:#fff3bf;color:#453700;font-size:13.5px;line-height:1.4}
+.ent.kb h1.ent-h{display:none}
+.ent.kb #signup{gap:6px;padding:10px}
+.ent.kb #signup label{gap:3px;font-size:12.5px}
+.ent.kb #signup input:not([type=checkbox]){min-height:44px;padding-block:7px}
+.ent.kb #signup .ent-eye{min-height:44px}
+.ent.kb #signup .ent-go{min-height:46px;padding-block:6px;font-size:14.5px}
