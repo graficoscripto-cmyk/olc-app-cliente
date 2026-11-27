@@ -12,21 +12,9 @@ const SPARK = '<path d="M20 2c2 11 7 16 18 18-11 2-16 7-18 18-2-11-7-16-18-18C13
 
 /* marca e personagens desenhados para a OLC */
 const MARK = svg('0 0 40 40', '<rect width="40" height="40" rx="12" fill="#d7fb5c"/><path d="M18 8h4v8l6-6 3 3-6 6h7v4h-7l6 6-3 3-6-6v6h-4v-6l-6 6-3-3 6-6H8v-4h7l-6-6 3-3 6 6z" fill="#0a0a09"/>', 'v-mark');
-const AGENT = svg('0 0 64 64', '<path d="M32 5C16 5 6 15 6 30c0 7 2 12 6 16l-3 13 14-6c3 1 6 1 9 1 16 0 26-10 26-24S48 5 32 5z" fill="#d7fb5c"/><path d="M21 27q3-5 7 0M36 27q3-5 7 0" fill="none" stroke="#0a0a09" stroke-width="3.4" stroke-linecap="round"/><path d="M23 36q9 10 18 0z" fill="#0a0a09"/><circle cx="17" cy="37" r="3" fill="#20c8bf"/><circle cx="47" cy="37" r="3" fill="#20c8bf"/>', 'v-agent');
+const STAR = 'M18 8h4v8l6-6 3 3-6 6h7v4h-7l6 6-3 3-6-6v6h-4v-6l-6 6-3-3 6-6H8v-4h7l-6-6 3-3 6 6z';
+const AGENT = svg('0 0 64 64', '<circle cx="32" cy="32" r="31" fill="#d7fb5c"/><path transform="translate(8 8) scale(1.2)" d="' + STAR + '" fill="#0a0a09"/>', 'v-agent');
 const CLIENT = svg('0 0 64 64', '<circle cx="32" cy="32" r="30" fill="#1d3a37"/><circle cx="42" cy="22" r="8" fill="#f8e07c"/><path d="M5 42q9-9 18 0t18 0 18 0v6C53 57 44 62 32 62S11 57 5 48z" fill="#20c8bf"/>', 'v-client');
-
-const STK_CAL = svg('0 0 96 100', '<rect x="8" y="14" width="76" height="76" rx="18" fill="#fff"/><path d="M8 32a18 18 0 0 1 18-18h40a18 18 0 0 1 18 18v6H8z" fill="#20c8bf"/><path d="M28 6v18M64 6v18" stroke="#0a0a09" stroke-width="6" stroke-linecap="round"/><circle cx="46" cy="64" r="18" fill="#d7fb5c"/><path d="M37 64l6 6 12-12" fill="none" stroke="#0a0a09" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>');
-const STK_CLOCK = svg('0 0 80 80', '<circle cx="40" cy="40" r="34" fill="#f8e07c"/><circle cx="40" cy="40" r="25" fill="#fff"/><path d="M40 24v17l12 8" fill="none" stroke="#0a0a09" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>');
-const STK_PLANE = svg('0 0 120 90', '<path d="M4 82q28 6 40-14t26-22" fill="none" stroke="#20c8bf" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/><path d="M60 34l56-30-18 62-16-18z" fill="#d7fb5c"/><path d="M82 48l34-44-44 38 2 22z" fill="#a9d63a"/>');
-const ring = (r, c) => `<circle class="${c}" cx="300" cy="300" r="${r}"/>`;
-const layer = (c, body) => svg('0 0 600 600', body, 'v-layer ' + c);
-const RINGS = cls => `<div class="v-rings ${cls || ''}" aria-hidden="true">` +
-  layer('base', [90, 215].map(r => ring(r, 'rg')).join('')) + layer('base base--b', [150, 285].map(r => ring(r, 'rg')).join('')) +
-  [0, 1, 2].map(i => layer('wave wave' + i, ring(285, ''))).join('') +
-  layer('spin spin--a', ring(182, 'dash') + '<circle class="sat" cx="482" cy="300" r="6"/>') +
-  layer('spin spin--b', ring(250, 'arc') + '<circle class="sat sat--b" cx="300" cy="50" r="4.5"/>') +
-  layer('spin spin--c', '<path class="sweep" d="M300 300L585 300A285 285 0 0 0 546.8 157.5Z"/>') +
-  layer('bull', ring(9, '')) + '</div>';
 
 const CHAT = [
   ['c', 'Oi! Tem horário no sábado?', '10:02'],
@@ -35,7 +23,6 @@ const CHAT = [
   ['a', 'Fechado! Já registrei na agenda ✅', '10:03']
 ];
 const chat = () => `<figure class="v-scene" aria-label="Conversa ilustrativa entre um cliente e o Agente">
-  <span class="v-stk v-stk--plane">${STK_PLANE}</span><span class="v-stk v-stk--clock">${STK_CLOCK}</span>
   <div class="v-phone">
    <div class="v-phone__head">${AGENT}<div><b>Seu Agente</b><small id="vStatus">online</small></div><span class="v-tag">Conversa ilustrativa</span></div>
    <div class="v-log" id="vLog">
@@ -44,7 +31,6 @@ const chat = () => `<figure class="v-scene" aria-label="Conversa ilustrativa ent
    </div>
    <div class="v-booked" id="vBooked"><span>${CHECK}</span><div><b>Reserva na Agenda</b><small>Sábado · 10h · 6 pessoas</small></div></div>
   </div>
-  <span class="v-stk v-stk--cal" id="vCal">${STK_CAL}</span>
   <span class="v-call v-call--a" id="vCallA" aria-hidden="true"><b>O cliente pergunta,</b> o Agente responde</span>
   <span class="v-call v-call--b" id="vCallB" aria-hidden="true"><b>Fechou?</b> Vai para a Agenda</span>
  </figure>`;
@@ -112,7 +98,7 @@ function render(root, on) {
  </div></header>
 
  <main>
- <section class="v-hero" id="vTop"><div class="v-grid" aria-hidden="true">${[1, 2, 3, 4, 5, 6, 7].map(i => `<i class="v-plus v-plus${i}"></i>`).join('')}<i class="v-beam"></i></div>${RINGS('v-rings--hero')}<div class="v-wrap v-hero__in">
+ <section class="v-hero" id="vTop"><div class="v-warp" aria-hidden="true"></div><div class="v-wrap v-hero__in">
   <div class="v-hero__head">
    <p class="v-over"><b>Novo</b> Agente de atendimento, agendamento e tira-dúvidas para empresas</p>
    <h1 aria-label="Seu WhatsApp atende e agenda"><em aria-hidden="true"><i class="v-w v-w0"><i>Seu</i></i> <i class="v-w v-w1"><i>WhatsApp</i></i></em> <span aria-hidden="true"><i class="v-w v-w2"><i>atende</i></i> <i class="v-w v-w3"><i>e</i></i> <i class="v-w v-w4"><i>agenda</i></i><b class="v-swash"></b></span></h1>
@@ -146,7 +132,7 @@ function render(root, on) {
   </div>
  </div></section>
 
- <section class="v-panel" aria-labelledby="vPanelT">${RINGS('v-rings--side')}<div class="v-wrap">
+ <section class="v-panel" aria-labelledby="vPanelT"><div class="v-warp" aria-hidden="true"></div><div class="v-wrap">
   <div class="v-title" data-r>${eyebrow('O seu painel')}<h2 id="vPanelT">Três telas. Tudo no celular.</h2></div>
   <div class="v-tabs" role="tablist" aria-label="Telas do painel">${PANEL.map((p, i) => `<button type="button" role="tab" id="vTab${i}" aria-controls="vPane${i}" aria-selected="${i === 0}" data-pane="${i}">${p[0]}</button>`).join('')}<i class="v-tabs__ink pos0" id="vInk" aria-hidden="true"></i></div>
   <div class="v-panes">${PANEL.map((p, i) => `<div class="v-pane${i === 0 ? ' on' : ''}" role="tabpanel" id="vPane${i}" aria-labelledby="vTab${i}"><p>${p[1]}</p><div class="v-ui" aria-hidden="true">${p[2]}</div></div>`).join('')}</div>
@@ -158,7 +144,7 @@ function render(root, on) {
   <div>${FAQ.map(f => `<details data-r><summary><span>${f[0]}</span><i>${ARROW}</i></summary><p>${f[1]}</p></details>`).join('')}</div>
  </div></section>
 
- <section class="v-end" aria-labelledby="vEndT">${RINGS('v-rings--end')}<div class="v-wrap" data-r>
+ <section class="v-end" aria-labelledby="vEndT"><div class="v-warp" aria-hidden="true"></div><div class="v-wrap" data-r>
   <span class="v-end__art">${AGENT}</span>
   <h2 id="vEndT">Pronto para começar?</h2>
   <p>Fale com a OLC ou entre no seu painel.</p>
@@ -240,8 +226,8 @@ function render(root, on) {
 /* conversa do topo: digita, responde, registra a reserva e recomeça */
 function playChat(v) {
   const scene = v.querySelector('.v-scene'), msgs = [...v.querySelectorAll('.v-msg')], typing = v.querySelector('#vTyping');
-  const booked = v.querySelector('#vBooked'), cal = v.querySelector('#vCal'), callA = v.querySelector('#vCallA'), callB = v.querySelector('#vCallB'), status = v.querySelector('#vStatus');
-  if (calm()) { [...msgs, booked, cal, callA, callB].forEach(el => el.classList.add('on')); return; }
+  const booked = v.querySelector('#vBooked'), callA = v.querySelector('#vCallA'), callB = v.querySelector('#vCallB'), status = v.querySelector('#vStatus');
+  if (calm()) { [...msgs, booked, callA, callB].forEach(el => el.classList.add('on')); return; }
   scene.classList.add('play');
   let seen = true;
   if ('IntersectionObserver' in window) new IntersectionObserver(e => seen = e[0].isIntersecting, { threshold: .15 }).observe(scene);
@@ -267,9 +253,9 @@ function playChat(v) {
         status.textContent = 'online'; msgs[i].classList.add('on'); if (agent) callA.classList.add('on'); await wait(agent ? 900 : 600);
       }
       first = false;
-      booked.classList.add('on'); cal.classList.add('on'); callB.classList.add('on');
+      booked.classList.add('on'); callB.classList.add('on');
       await wait(5200);
-      [...msgs, booked, cal, callA, callB].forEach(el => el.classList.remove('on'));
+      [...msgs, booked, callA, callB].forEach(el => el.classList.remove('on'));
       await wait(700);
     }
   })();

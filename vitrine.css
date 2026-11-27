@@ -37,9 +37,7 @@ body.is-landing{background:#0a0a09}
 .v-btn--nav{min-height:44px;min-width:84px;padding:0 18px;border-color:#41413c;border-radius:14px;background:transparent;color:var(--lime);font-size:15px}
 
 /* topo com a conversa */
-.v-hero{margin-top:-60px;padding:70px 0 40px;overflow:hidden;background:radial-gradient(80% 38% at 50% 58%,rgba(215,251,92,.085),transparent 70%),var(--ink);color:#fff}
-.v-rings{position:absolute;pointer-events:none;fill:none;stroke:var(--lime);stroke-width:1.2;opacity:.34}
-.v-rings--hero{left:50%;top:455px;width:760px;height:760px;margin:-380px 0 0 -380px}
+.v-hero{margin-top:-60px;padding:70px 0 40px;overflow:hidden;background:var(--ink);color:#fff}
 .v-hero__in{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;text-align:center}
 .v-over{max-width:34em;margin-inline:auto!important;font:500 11px/1.55 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
 .v-over b{display:inline-block;margin-right:4px;padding:0 7px;border-radius:6px;background:var(--lime);color:var(--ink);font-weight:500}
@@ -80,13 +78,6 @@ body.is-landing{background:#0a0a09}
 .v-booked small{display:block;font-size:12.5px;color:#bfe9e5}
 .v-scene.play .v-booked{opacity:0;transform:translateY(16px);transition:opacity .3s,transform .5s cubic-bezier(.3,1.5,.5,1)}
 .v-scene.play .v-booked.on{opacity:1;transform:none}
-.v-stk{position:absolute;display:block;pointer-events:none}
-.v-stk svg{display:block;width:100%;height:auto;filter:drop-shadow(0 10px 14px rgba(0,0,0,.4))}
-.v-stk--cal{z-index:3;right:-12px;bottom:-20px;width:76px;rotate:9deg}
-.v-scene.play .v-stk--cal{opacity:0;transform:scale(.3) rotate(-24deg);transition:opacity .25s,transform .6s cubic-bezier(.3,1.7,.5,1)}
-.v-scene.play .v-stk--cal.on{opacity:1;transform:none}
-.v-stk--clock{z-index:3;left:-12px;bottom:-22px;width:52px;animation:v-float 5.5s ease-in-out infinite}
-.v-stk--plane{z-index:3;right:-12px;top:-12px;width:46px;animation:v-float 6.5s ease-in-out -2s infinite}
 @keyframes v-float{50%{transform:translateY(-9px) rotate(5deg)}}
 
 .v-hero__cta{display:grid;gap:10px;width:100%;max-width:400px;margin:14px auto 0}
@@ -109,7 +100,7 @@ body.is-landing{background:#0a0a09}
 .v-line li{position:relative;padding-left:48px;min-width:0}
 .v-line__num{position:absolute;left:0;top:18px;z-index:1;display:grid;place-items:center;width:33px;height:33px;border:2px solid #d3d7ca;border-radius:50%;background:var(--paper);font:500 14px/1 var(--mono);transition:transform .35s cubic-bezier(.3,1.7,.5,1)}
 .v-line__num.lit{border-color:var(--lime);background:var(--lime);transform:scale(1.12);box-shadow:0 0 0 5px rgba(215,251,92,.32)}
-.v-card{border-radius:26px;background:radial-gradient(90% 80% at 100% 0,rgba(215,251,92,.13),transparent 70%),linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px) 0 0/28px 28px,var(--ink);overflow:hidden}
+.v-card{border-radius:26px;background:radial-gradient(90% 80% at 100% 0,rgba(215,251,92,.1),transparent 70%),var(--ink);overflow:hidden}
 .v-art{display:grid;place-items:center;min-height:236px;padding:22px 18px;color:#fff}
 .v-line__tx{margin-top:16px}
 .v-line__tx p{margin-top:6px;font-size:16px;color:var(--mute)}
@@ -160,9 +151,8 @@ body.is-landing{background:#0a0a09}
 .v-switch[aria-checked="true"] i::after{transform:translateX(22px)}
 
 /* painel */
-.v-panel{padding:78px 0 56px;overflow:hidden;background:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px) 0 0/44px 44px,var(--ink);color:#fff}
+.v-panel{padding:78px 0 56px;overflow:hidden;background:var(--ink);color:#fff}
 .v-panel .v-eyebrow,.v-end .v-eyebrow{color:var(--teal)}
-.v-rings--side{right:-330px;top:-250px;width:620px;height:620px}
 .v-tabs{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:2px solid var(--line)}
 .v-tabs button{min-height:56px;padding:6px 4px;border:0;background:transparent;color:#97978d;font-size:15px;font-weight:800;line-height:1.2}
 .v-tabs button[aria-selected="true"]{color:#fff}
@@ -200,7 +190,6 @@ body.is-landing{background:#0a0a09}
 
 /* chamada final e rodapé */
 .v-end{padding:80px 0 76px;overflow:hidden;background:var(--ink);color:#fff;text-align:center}
-.v-rings--end{left:50%;top:50%;width:720px;height:720px;margin:-360px 0 0 -360px;}
 .v-end__art svg{width:92px;height:92px;animation:v-float 5s ease-in-out infinite}
 .v-end h2{margin-top:14px;color:var(--lime);font-size:clamp(54px,16vw,100px)}
 .v-end .v-wrap>p{margin-top:12px;font-size:17px;color:#dcdcd4}
@@ -234,7 +223,6 @@ body.is-landing{background:#0a0a09}
  .v-scene{grid-area:chat;align-self:center;max-width:430px}
  .v-hero__cta{grid-area:cta;align-self:start;grid-template-columns:auto auto;justify-content:start;max-width:none;margin:0}
  .v-hero__cta p{grid-column:1/-1}
- .v-rings--hero{left:75%;top:50%}
  .v-tape{margin-inline:-30px}
  .v-how{padding:130px 0 100px}
  .v-line{gap:64px}
@@ -265,28 +253,7 @@ body.is-landing{background:#0a0a09}
 }
 
 /* ===== rodada 27/11 · topo ===== */
-.v-layer{position:absolute;inset:0;width:100%;height:100%;fill:none;overflow:visible;will-change:transform}
-.v-layer.base{animation:v-ring 4.2s ease-in-out infinite;opacity:.45}.v-layer.base--b{animation-delay:-2.1s}
-@keyframes v-ring{50%{transform:scale(1.055);opacity:.8}}
-.v-layer.wave{stroke-width:2.6;opacity:0;animation:v-wave 4.8s cubic-bezier(.2,.6,.4,1) infinite}
-.v-layer.wave1{animation-delay:1.6s}.v-layer.wave2{animation-delay:3.2s}
-@keyframes v-wave{0%{transform:scale(.08);opacity:0}12%{opacity:.95}100%{transform:scale(1.14);opacity:0}}
-.v-layer.spin--a{animation:v-spin 13s linear infinite}.v-layer.spin--b{animation:v-spin 21s linear infinite reverse}.v-layer.spin--c{animation:v-spin 7s linear infinite}
-@keyframes v-spin{to{transform:rotate(360deg)}}
-.v-rings .dash{stroke-dasharray:3 13;stroke-width:2}
-.v-rings .arc{stroke-dasharray:240 1330;stroke-width:3;stroke-linecap:round}
-.v-rings .sat{fill:var(--lime);stroke:none}.v-rings .sat--b{fill:#fff}
-.v-rings .sweep{fill:var(--lime);stroke:none;opacity:.17}
-.v-layer.bull{fill:var(--lime);stroke:none;animation:v-ring 2.1s ease-in-out infinite}
 
-.v-grid{position:absolute;inset:0;pointer-events:none;overflow:hidden;background:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px) 50% 0/44px 44px,linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px) 50% 0/44px 44px;-webkit-mask-image:linear-gradient(#000 55%,transparent 98%);mask-image:linear-gradient(#000 55%,transparent 98%)}
-.v-plus{position:absolute;width:13px;height:13px;opacity:.3;animation:v-twinkle 3.6s ease-in-out infinite}
-.v-plus::before,.v-plus::after{content:"";position:absolute;left:5.5px;top:0;width:2px;height:13px;border-radius:2px;background:var(--lime)}
-.v-plus::after{rotate:90deg}
-.v-plus1{left:7%;top:88px}.v-plus2{right:9%;top:150px;animation-delay:.6s}.v-plus3{left:13%;top:31%;animation-delay:1.2s}.v-plus4{right:6%;top:44%;animation-delay:1.8s}.v-plus5{left:5%;top:63%;animation-delay:2.4s}.v-plus6{right:16%;top:76%;animation-delay:.9s}.v-plus7{left:46%;top:70px;animation-delay:3s}
-@keyframes v-twinkle{50%{opacity:1;transform:rotate(90deg) scale(1.35)}}
-.v-beam{position:absolute;left:0;right:0;top:0;height:180px;background:linear-gradient(transparent,rgba(215,251,92,.065),transparent);animation:v-beam 9s linear infinite}
-@keyframes v-beam{from{transform:translateY(-200px)}to{transform:translateY(1000px)}}
 
 .v h1 em{display:block;font-style:normal}
 .v h1 span{white-space:normal;position:relative;width:max-content;max-width:100%;margin-inline:auto}
@@ -305,8 +272,7 @@ body.is-landing{background:#0a0a09}
 .v-hero__cta{animation:v-rise .8s ease .75s both}
 .v-scene{animation:v-rise .9s cubic-bezier(.2,1,.3,1) .5s both}
 @keyframes v-rise{from{opacity:0;transform:translateY(24px)}}
-@media (prefers-reduced-motion:reduce){.v-layer.wave,.v-layer.spin--c,.v-beam{display:none}}
-@media (min-width:900px){.v h1 span{margin-inline:0}.v-rings--hero{left:74%;top:50%}}
+@media (min-width:900px){.v h1 span{margin-inline:0}}
 
 /* ===== rodada 27/11 · movimento dentro dos cards ===== */
 .v-card:not(.live) *,.v-take:not(.live) *,.v-checks li:not(.live) *,.v-ui:not(.live) *{animation-play-state:paused!important}
@@ -472,10 +438,6 @@ body.is-landing{background:#0a0a09}
  .v-scene.play .v-call:not(.on){opacity:0}
  .v-scene.play .v-call--a:not(.on){transform:translateX(-46px) scale(.8)}
  .v-scene.play .v-call--b:not(.on){transform:translateX(46px) scale(.8)}
- .v-stk--clock{bottom:-34px}
- .v-stk--cal{right:auto;left:30px;bottom:-34px;width:54px}
- .v-stk--clock{display:none}
- .v-stk--plane{top:-38px;right:-6px}
 
  /* passos: ilustracao e texto em camadas, alternando os lados */
  .v-how{overflow:hidden}
@@ -515,7 +477,6 @@ body.is-landing{background:#0a0a09}
 .v .v-checks li:nth-child(3) h3{color:#fff}
 .v .v-checks li h3,.v .v-line__tx h3,.v .v-how h2,.v .v-does h2,.v .v-faq h2{color:var(--ink)}
 .v .v-checks li:nth-child(3) h3{color:#fff}
-.v-plus1{left:3%;top:196px}.v-plus7{left:auto;right:4%;top:262px}.v-plus2{top:318px;right:3%}
 .v-hero:not(.live) *,.v-tape:not(.live) *,.v-panel:not(.live) *,.v-end:not(.live) *{animation-play-state:paused!important}
 @media (max-width:899px){
  .v-scene{margin-top:56px!important}
@@ -523,6 +484,12 @@ body.is-landing{background:#0a0a09}
  .v-art--2{padding-bottom:52px}
  .v-phone{animation-name:v-stage-lite}
  @keyframes v-stage-lite{0%,100%{transform:translateY(0) rotate(-.6deg)}50%{transform:translateY(-5px) rotate(.6deg)}}
- .v-beam{display:none}
 }
-@media (min-width:900px){.v-plus3{left:42%;top:78%}.v-plus1{left:48%;top:14%}}
+
+/* ===== rodada 3 · fundo: grade distorcida e um unico destaque discreto ===== */
+.v-warp{position:absolute;inset:0;pointer-events:none;overflow:hidden;background:url("bg-grid.svg?v=9") 50% 0/560px 560px repeat}
+.v-warp::after{content:"";position:absolute;inset:0;background:radial-gradient(70% 46% at 50% 24%,rgba(10,10,9,.58),transparent 72%),linear-gradient(transparent 68%,var(--ink) 97%)}
+.v-hero .v-warp::before{content:"";position:absolute;left:50%;top:430px;width:520px;height:520px;margin-left:-260px;border-radius:50%;background:radial-gradient(closest-side,rgba(215,251,92,.12),transparent);animation:v-glow 9s ease-in-out infinite}
+@keyframes v-glow{50%{transform:scale(1.14);opacity:.65}}
+.v-scene{margin-bottom:8px}
+@media (min-width:900px){.v-warp{background-size:640px 640px}.v-warp::after{background:radial-gradient(50% 70% at 24% 50%,rgba(10,10,9,.7),transparent 75%),linear-gradient(transparent 70%,var(--ink) 98%)}.v-hero .v-warp::before{left:74%;top:50%;margin-top:-260px}}
